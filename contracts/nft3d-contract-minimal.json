@@ -1,0 +1,47 @@
+{
+  "nft3d": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "description": {
+        "type": "string",
+        "maxLength": 500
+      },
+      "geometry3d": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 3072
+      },
+      "geometryType": {
+        "type": "string",
+        "enum": ["parametric", "voxel", "procedural"]
+      },
+      "colors": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "maxItems": 10
+      },
+      "edition": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "maxEditions": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "required": [
+      "name", 
+      "geometry3d", 
+      "geometryType"
+    ],
+    "additionalProperties": false
+  }
+}

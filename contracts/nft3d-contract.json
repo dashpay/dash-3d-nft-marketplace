@@ -1,0 +1,85 @@
+{
+  "$format_version": "0",
+  "ownerId": "5DbLwAxGBzUzo81VewMUwn4b5P4bpv9FNFybi25XB5Bk",
+  "version": 1,
+  "documentSchemas": {
+    "nft3d": {
+      "type": "object",
+      "documentsMutable": false,
+      "canBeDeleted": true,
+      "transferable": 1,
+      "tradeMode": 1,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Name of the 3D NFT",
+          "position": 0
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Description of the 3D NFT",
+          "position": 1
+        },
+        "geometry3d": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3072,
+          "description": "3D geometry data in JSON format (max 3KB)",
+          "position": 2
+        },
+        "geometryType": {
+          "type": "string",
+          "enum": ["parametric", "voxel", "procedural"],
+          "description": "Type of 3D geometry",
+          "position": 3
+        },
+        "colors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "maxItems": 10,
+          "description": "Color palette for the 3D object",
+          "position": 4
+        },
+        "edition": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Edition number if part of a series",
+          "position": 5
+        },
+        "maxEditions": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum editions if limited series",
+          "position": 6
+        }
+      },
+      "required": [
+        "name", 
+        "geometry3d", 
+        "geometryType"
+      ],
+      "additionalProperties": false,
+      "indices": [
+        {
+          "name": "owner",
+          "properties": [
+            { "$ownerId": "asc" }
+          ]
+        },
+        {
+          "name": "ownerTransferredAt",
+          "properties": [
+            { "$ownerId": "asc" },
+            { "$transferredAt": "asc" }
+          ]
+        }
+      ]
+    }
+  }
+}

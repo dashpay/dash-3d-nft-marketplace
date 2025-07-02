@@ -1,0 +1,159 @@
+{
+  "contractDefinition": {
+    "nft3d": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "position": 0
+        },
+        "description": {
+          "type": "string",
+          "position": 1
+        },
+        "geometry3d": {
+          "type": "string",
+          "position": 2
+        },
+        "geometryType": {
+          "type": "string",
+          "position": 3
+        },
+        "edition": {
+          "type": "integer",
+          "position": 4
+        },
+        "maxEditions": {
+          "type": "integer",
+          "position": 5
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "identityId": "5DbLwAxGBzUzo81VewMUwn4b5P4bpv9FNFybi25XB5Bk",
+  "contractId": "EBioSoFFTDf346ndCMHGmYF8QzgwM8972jG5fL4ndBL7",
+  "stateTransition": {
+    "$format_version": "0",
+    "id": {
+      "type": "Buffer",
+      "data": [
+        195,
+        231,
+        0,
+        158,
+        102,
+        239,
+        43,
+        152,
+        120,
+        243,
+        66,
+        202,
+        3,
+        176,
+        102,
+        158,
+        234,
+        230,
+        39,
+        249,
+        110,
+        38,
+        94,
+        143,
+        95,
+        178,
+        253,
+        253,
+        21,
+        128,
+        193,
+        204
+      ]
+    },
+    "config": {
+      "$format_version": "0",
+      "canBeDeleted": false,
+      "readonly": false,
+      "keepsHistory": false,
+      "documentsKeepHistoryContractDefault": false,
+      "documentsMutableContractDefault": true,
+      "documentsCanBeDeletedContractDefault": true,
+      "requiresIdentityEncryptionBoundedKey": null,
+      "requiresIdentityDecryptionBoundedKey": null
+    },
+    "version": 1,
+    "ownerId": {
+      "type": "Buffer",
+      "data": [
+        62,
+        168,
+        140,
+        201,
+        98,
+        46,
+        194,
+        45,
+        148,
+        219,
+        158,
+        46,
+        122,
+        130,
+        59,
+        225,
+        60,
+        38,
+        61,
+        3,
+        40,
+        20,
+        107,
+        168,
+        10,
+        254,
+        195,
+        59,
+        52,
+        186,
+        129,
+        175
+      ]
+    },
+    "schemaDefs": null,
+    "documentSchemas": {
+      "nft3d": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "position": 0
+          },
+          "description": {
+            "type": "string",
+            "position": 1
+          },
+          "geometry3d": {
+            "type": "string",
+            "position": 2
+          },
+          "geometryType": {
+            "type": "string",
+            "position": 3
+          },
+          "edition": {
+            "type": "integer",
+            "position": 4
+          },
+          "maxEditions": {
+            "type": "integer",
+            "position": 5
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "timestamp": "2025-06-29T15:57:06.242Z"
+}

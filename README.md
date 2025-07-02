@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dash 3D NFT Marketplace
+
+A decentralized 3D NFT marketplace built on Dash Platform. This is a **semi-static** website with no backend - all data is stored on the blockchain and accessed directly from the browser.
+
+## Features
+
+- **3D NFTs**: All NFTs have 3D representations under 3KB
+- **Identity-based Login**: Login with your Dash Platform identity ID
+- **Direct Blockchain Access**: No backend server needed
+- **Compact 3D Formats**: Parametric, voxel, and procedural geometry
+- **Real-time Rendering**: Interactive 3D viewer using Three.js
+
+## Architecture
+
+```
+Browser → JS Dash SDK → Dash Platform Blockchain
+   ↓
+Static Files (HTML/JS/CSS)
+```
+
+### No Backend Required
+- All NFT data stored in Dash Platform data contracts
+- Authentication via identity ID (no passwords)
+- Direct peer-to-peer transactions
+- Can be hosted on any static file server
+
+## 3D Geometry Types
+
+### 1. Parametric (Most Efficient)
+```json
+{
+  "type": "parametric",
+  "shape": "sphere",
+  "params": [1.5],
+  "transforms": [
+    { "type": "rotate", "values": [0, 0.5, 0] }
+  ]
+}
+```
+
+### 2. Voxel
+```json
+{
+  "type": "voxel",
+  "size": [8, 8, 8],
+  "data": "base64encodedvoxeldata..."
+}
+```
+
+### 3. Procedural
+```json
+{
+  "type": "procedural",
+  "seed": 12345,
+  "algorithm": "fractal",
+  "params": { "iterations": 5 }
+}
+```
 
 ## Getting Started
 
-First, run the development server:
+### Development
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Visit http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Production Build
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Build static files
+npm run build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Files will be in 'out' directory
+# Deploy to any static host
+```
 
-## Learn More
+## Usage
 
-To learn more about Next.js, take a look at the following resources:
+1. **Login**: Enter your Dash Platform identity ID
+2. **View Collection**: See your owned 3D NFTs
+3. **Browse Marketplace**: Discover NFTs for sale
+4. **Interact**: Rotate and zoom 3D models
+5. **Purchase**: Buy NFTs directly (requires Dash wallet integration)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Data Contract Schema
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The NFT data contract includes:
+- `name`: NFT title
+- `geometry3d`: Compact 3D data (<3KB)
+- `geometryType`: Type of 3D representation
+- `ownerId`: Current owner's identity
+- `price`: Sale price in Duffs
+- `forSale`: Marketplace listing status
 
-## Deploy on Vercel
+## Security
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Read-only Operations**: Website only reads from blockchain
+- **No Private Keys**: Never handles sensitive data
+- **Identity Verification**: All actions require valid identity
+- **Immutable History**: All transfers recorded on-chain
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+This is a static website that can be deployed to:
+- GitHub Pages
+- Netlify
+- Vercel
+- AWS S3
+- Any web server
+
+No backend configuration needed!
+
+## Demo Mode
+
+Click "Try Demo Mode" on the login page to explore with sample data.
+
+## Future Enhancements
+
+- [ ] Wallet integration for purchases
+- [ ] NFT minting interface
+- [ ] Advanced 3D effects
+- [ ] Social features
+- [ ] AR/VR support
+
+## License
+
+MIT

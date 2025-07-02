@@ -1,103 +1,162 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useStore } from '@/store/useStore';
+import { NetworkToggle } from '@/components/NetworkToggle';
+import { getNFTSDK } from '@/lib/dash-sdk';
+import { ConnectionDebugger } from '@/components/ConnectionDebugger';
+
+export default function LoginPage() {
+  const router = useRouter();
+  const { network, setNetwork, login, isAuthenticated, error, setError } = useStore();
+  const [identityId, setIdentityId] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Load saved network preference
+    const savedNetwork = localStorage.getItem('dash-nft-network') as 'mainnet' | 'testnet' | null;
+    if (savedNetwork && savedNetwork !== network) {
+      setNetwork(savedNetwork);
+    }
+
+    // Initialize SDK with current network
+    const sdk = getNFTSDK({ network });
+    sdk.initialize().catch(console.error);
+
+    // Check if already logged in
+    const savedIdentity = localStorage.getItem('dash-nft-identity');
+    if (savedIdentity) {
+      setIdentityId(savedIdentity);
+      // Auto-login
+      handleLogin(savedIdentity);
+    }
+  }, [network]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/gallery');
+    }
+  }, [isAuthenticated, router]);
+
+  const handleLogin = async (id?: string) => {
+    const identityToUse = id || identityId;
+    if (!identityToUse.trim()) {
+      setError('Please enter an identity ID');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await login(identityToUse);
+    } catch (err) {
+      // Error is handled in the store
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNetworkChange = async (newNetwork: 'mainnet' | 'testnet') => {
+    try {
+      await setNetwork(newNetwork);
+    } catch (error) {
+      console.error('Failed to change network:', error);
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="max-w-md w-full space-y-8">
+        {/* Logo/Title */}
+        <div className="text-center">
+          <h1 className="text-5xl font-bold mb-2">
+            <span className="gradient-text">Dash 3D NFTs</span>
+          </h1>
+          <p className="text-gray-400">Enter your identity to view your collection</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        {/* Network Toggle */}
+        <div className="flex justify-center">
+          <NetworkToggle
+            currentNetwork={network}
+            onNetworkChange={handleNetworkChange}
+            disabled={isLoading}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </div>
+
+        {/* Login Form */}
+        <div className="gradient-border p-8 space-y-6">
+          <div>
+            <label htmlFor="identity" className="block text-sm font-medium mb-2">
+              Identity ID
+            </label>
+            <input
+              id="identity"
+              type="text"
+              value={identityId}
+              onChange={(e) => setIdentityId(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+              placeholder="e.g., 5rvkYqKPPKPLnUvgRfuerT4o9CJ8qKRM8GBm2YGvVBXx"
+              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-dash-blue transition-colors"
+              disabled={isLoading}
+            />
+            <p className="mt-2 text-sm text-gray-500">
+              Format: 44 base58 characters (alphanumeric, no 0, O, I, or l)
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            onClick={() => handleLogin()}
+            disabled={isLoading || !identityId.trim()}
+            className={`
+              w-full py-3 px-4 rounded-lg font-medium transition-all duration-200
+              ${isLoading || !identityId.trim()
+                ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                : 'bg-dash-blue hover:bg-dash-blue-dark text-white glow'
+              }
+            `}
+          >
+            {isLoading ? 'Verifying...' : 'Enter Gallery'}
+          </button>
+        </div>
+
+        {/* Demo Mode */}
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-700"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gray-900 text-gray-400">or</span>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => handleLogin('5rvkYqKPPKPLnUvgRfuerT4o9CJ8qKRM8GBm2YGvVBXx')}
+            disabled={isLoading}
+            className="text-dash-blue hover:text-dash-blue-dark transition-colors"
+          >
+            Try Demo Mode
+          </button>
+        </div>
+
+        {/* Info */}
+        <div className="text-center text-sm text-gray-500">
+          <p>This is a semi-static NFT marketplace demo</p>
+          <p>All data is stored on Dash Platform</p>
+        </div>
+      </div>
+      
+      {/* Connection Debugger */}
+      <ConnectionDebugger />
     </div>
   );
 }

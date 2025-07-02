@@ -1,0 +1,32 @@
+{
+  "nft3d": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "position": 0
+      },
+      "description": {
+        "type": "string",
+        "position": 1
+      },
+      "geometry3d": {
+        "type": "string",
+        "position": 2
+      },
+      "geometryType": {
+        "type": "string",
+        "position": 3
+      },
+      "edition": {
+        "type": "integer",
+        "position": 4
+      },
+      "maxEditions": {
+        "type": "integer",
+        "position": 5
+      }
+    },
+    "additionalProperties": false
+  }
+}
