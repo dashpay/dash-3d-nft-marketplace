@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { setupConnectionMonitoring, testDirectConnection } from '@/lib/monitor-wasm-connection';
-import { testWorkingEvonode } from '@/lib/test-working-evonode';
-import { testWasmConnection } from '@/lib/test-wasm-connection';
+import { setupConnectionMonitoring, testDirectConnection } from '@/lib/monitor-wasm-connection-mock';
+import { testWorkingEvonode } from '@/lib/test-working-evonode-mock';
+import { testWasmConnection } from '@/lib/test-wasm-connection-mock';
 
 export function ConnectionDebugger() {
   const [isMonitoring, setIsMonitoring] = useState(false);
@@ -30,7 +30,7 @@ export function ConnectionDebugger() {
       await testWorkingEvonode();
       addResult('✅ Check console for detailed results');
     } catch (error) {
-      addResult(`❌ Test failed: ${error.message}`);
+      addResult(`❌ Test failed: ${error instanceof Error ? error.message : String(error)}`);
     }
     
     // Test direct connections
@@ -39,7 +39,7 @@ export function ConnectionDebugger() {
       await testDirectConnection();
       addResult('✅ Check console for detailed results');
     } catch (error) {
-      addResult(`❌ Direct connection test failed: ${error.message}`);
+      addResult(`❌ Direct connection test failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
   
@@ -54,7 +54,7 @@ export function ConnectionDebugger() {
       await testWasmConnection();
       addResult('✅ WASM connection test complete - check console for details');
     } catch (error) {
-      addResult(`❌ WASM test failed: ${error.message}`);
+      addResult(`❌ WASM test failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
   

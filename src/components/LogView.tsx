@@ -39,8 +39,10 @@ if (typeof window !== 'undefined') {
       globalLogs.shift();
     }
     
-    // Notify listeners
-    logListeners.forEach(listener => listener([...globalLogs]));
+    // Notify listeners asynchronously to avoid setState during render
+    setTimeout(() => {
+      logListeners.forEach(listener => listener([...globalLogs]));
+    }, 0);
     
     // Call original console method
     originalConsole[level === 'info' ? 'log' : level](...args);

@@ -1,6 +1,6 @@
 // Dash Platform SDK Integration for NFT Marketplace
 import { NFT3D, NFTTransfer } from '@/types/nft';
-import { DashSDK, createDashSDK, documentToNFT } from './dash-sdk-wrapper';
+import { DashSDK, createDashSDK, documentToNFT } from './dash-sdk-wrapper-mock';
 
 export interface DashNFTSDKConfig {
   network: 'mainnet' | 'testnet' | 'devnet';
@@ -78,10 +78,10 @@ export class DashNFTSDK {
   async getNFTsByOwner(ownerId: string): Promise<NFT3D[]> {
     try {
       const documents = await this.sdk.queryDocuments(this.contractId, {
-        where: [
-          ['$ownerId', '==', ownerId]
-        ],
-        orderBy: [['$createdAt', 'desc']]
+        where: {
+          ownerId: ownerId
+        },
+        orderBy: '$createdAt desc'
       });
       
       return documents.map(doc => documentToNFT(doc));
@@ -94,7 +94,7 @@ export class DashNFTSDK {
   async getRecentNFTs(): Promise<NFT3D[]> {
     try {
       const documents = await this.sdk.queryDocuments(this.contractId, {
-        orderBy: [['$createdAt', 'desc']],
+        orderBy: '$createdAt desc',
         limit: 20
       });
       
@@ -108,7 +108,7 @@ export class DashNFTSDK {
   async getRecentlyTransferredNFTs(): Promise<NFT3D[]> {
     try {
       const documents = await this.sdk.queryDocuments(this.contractId, {
-        orderBy: [['$transferredAt', 'desc']],
+        orderBy: '$transferredAt desc',
         limit: 20
       });
       
@@ -122,9 +122,9 @@ export class DashNFTSDK {
   async getNFTById(nftId: string): Promise<NFT3D | null> {
     try {
       const documents = await this.sdk.queryDocuments(this.contractId, {
-        where: [
-          ['$id', '==', nftId]
-        ]
+        where: {
+          id: nftId
+        }
       });
       
       if (documents.length === 0) return null;
@@ -140,17 +140,18 @@ export class DashNFTSDK {
     try {
       const documents = await this.sdk.queryDocuments(this.contractId, {
         documentType: 'transfer',
-        where: [
-          ['nftId', '==', nftId]
-        ],
-        orderBy: [['transferredAt', 'desc']]
+        where: {
+          nftId: nftId
+        },
+        orderBy: 'transferredAt desc'
       });
       
       return documents.map(doc => ({
         nftId: doc.data.nftId,
         fromId: doc.data.fromId,
         toId: doc.data.toId,
-        price: doc.data.price,
+        blockHeight: doc.data.transferredAtBlockHeight || 0,
+        coreBlockHeight: doc.data.transferredAtCoreBlockHeight || 0,
         timestamp: doc.data.transferredAt
       }));
     } catch (error) {
@@ -203,7 +204,7 @@ export class DashNFTSDK {
         }
       });
 
-      return result.success ? result.transactionId : null;
+      return result.success ? (result.id || null) : null;
     } catch (error) {
       console.error('Failed to create NFT:', error);
       return null;
@@ -215,7 +216,7 @@ export class DashNFTSDK {
 
 // Export singleton instance
 let sdkInstance: DashNFTSDK | null = null;
-let currentNetwork: 'mainnet' | 'testnet' | null = null;
+let currentNetwork: 'mainnet' | 'testnet' | 'devnet' | null = null;
 
 export function getNFTSDK(config?: DashNFTSDKConfig): DashNFTSDK {
   // Get network from config or default to testnet

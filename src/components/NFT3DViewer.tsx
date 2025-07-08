@@ -1,170 +1,335 @@
 'use client';
 
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Box, Sphere, Torus, Cylinder, Cone, Octahedron, Tetrahedron } from '@react-three/drei';
-import { NFT3D, ParametricGeometry, parseGeometry3D } from '@/types/nft';
-import { useRef } from 'react';
-import * as THREE from 'three';
+import { NFT3D } from '@/types/nft';
 
 interface NFT3DViewerProps {
   nft: NFT3D;
   interactive?: boolean;
   size?: 'small' | 'medium' | 'large';
+  autoRotate?: boolean;
+  showControls?: boolean;
+  ambientLightIntensity?: number;
+  directionalLightIntensity?: number;
 }
 
-// Component to render parametric geometry
-function ParametricShape({ geometry, colors }: { geometry: ParametricGeometry; colors?: string[] }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const primaryColor = colors?.[0] || '#00ffff';
-  const secondaryColor = colors?.[1] || '#ff00ff';
+export function NFT3DViewer({ 
+  nft, 
+  size = 'medium',
+  autoRotate = false,
+  interactive = true
+}: NFT3DViewerProps) {
+  const sizeMap = {
+    small: { width: '100%', height: '100%', scale: 0.8 },
+    medium: { width: '100%', height: '100%', scale: 1 },
+    large: { width: '100%', height: '100%', scale: 1.2 }
+  };
   
-  // Apply transforms
-  const rotation = geometry.transforms?.find(t => t.type === 'rotate')?.values || [0, 0, 0];
-  const position = geometry.transforms?.find(t => t.type === 'translate')?.values || [0, 0, 0];
-  const scale = geometry.transforms?.find(t => t.type === 'scale')?.values || [1, 1, 1];
+  const { width, height, scale } = sizeMap[size];
   
-  // Animated rotation
-  useRef<THREE.Mesh>(null);
+  // Parse geometry to determine shape based on NFT name
+  let shapeType = nft.name.toLowerCase(); // Use the NFT name as shape type
   
+  // Fallback to parsing geometry if needed
+  try {
+    const geometry = JSON.parse(nft.geometry3d);
+    if (geometry.shape && !shapeType) {
+      shapeType = geometry.shape;
+    }
+  } catch (e) {
+    // fallback to geometryType
+    if (!shapeType) {
+      if (nft.geometryType === 'parametric') shapeType = 'cube';
+      if (nft.geometryType === 'voxel') shapeType = 'voxel';
+      if (nft.geometryType === 'procedural') shapeType = 'spiral';
+    }
+  }
+
+  const primaryColor = nft.colors?.[0] || '#00D4FF';
+  const secondaryColor = nft.colors?.[1] || '#8B5CF6';
+  const tertiaryColor = nft.colors?.[2] || '#FF0080';
+
   const renderShape = () => {
-    const props = {
-      ref: meshRef,
-      position: position as [number, number, number],
-      rotation: rotation as [number, number, number],
-      scale: scale as [number, number, number],
-    };
+    const baseClasses = `transform-gpu transition-all duration-1000 ${autoRotate ? 'animate-spin' : 'hover:rotate-12'}`;
     
-    const material = (
-      <meshStandardMaterial 
-        color={primaryColor}
-        emissive={secondaryColor}
-        emissiveIntensity={0.2}
-        metalness={0.7}
-        roughness={0.3}
-      />
-    );
-    
-    switch (geometry.shape) {
-      case 'cube':
-        return <Box args={geometry.params as [number, number, number]} {...props}>{material}</Box>;
+    switch (shapeType) {
       case 'sphere':
-        return <Sphere args={geometry.params as [number, number, number]} {...props}>{material}</Sphere>;
+        return (
+          <div 
+            className={`w-24 h-24 rounded-full ${baseClasses}`}
+            style={{
+              background: `radial-gradient(circle at 30% 30%, ${primaryColor}, ${secondaryColor})`,
+              boxShadow: `0 0 30px ${primaryColor}40, inset -10px -10px 20px rgba(0,0,0,0.3)`,
+              transform: `scale(${scale})`,
+            }}
+          />
+        );
+      
       case 'torus':
-        return <Torus args={geometry.params as [number, number, number, number]} {...props}>{material}</Torus>;
-      case 'cylinder':
-        return <Cylinder args={geometry.params as [number, number, number]} {...props}>{material}</Cylinder>;
+        return (
+          <div className="relative" style={{ transform: `scale(${scale})` }}>
+            <div 
+              className={`w-24 h-24 rounded-full border-8 ${baseClasses}`}
+              style={{
+                borderColor: primaryColor,
+                background: `conic-gradient(from 0deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`,
+                boxShadow: `0 0 25px ${primaryColor}60, inset 0 0 15px rgba(0,0,0,0.4)`,
+              }}
+            />
+          </div>
+        );
+      
       case 'cone':
-        return <Cone args={geometry.params as [number, number, number]} {...props}>{material}</Cone>;
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <div 
+              className="w-0 h-0 mx-auto"
+              style={{
+                borderLeft: '30px solid transparent',
+                borderRight: '30px solid transparent',
+                borderBottom: `60px solid ${primaryColor}`,
+                filter: `drop-shadow(0 0 15px ${primaryColor}60)`,
+              }}
+            />
+            <div 
+              className="w-16 h-4 rounded-full mx-auto -mt-1"
+              style={{
+                background: `linear-gradient(45deg, ${secondaryColor}, ${primaryColor})`,
+                boxShadow: `0 0 15px ${secondaryColor}40`,
+              }}
+            />
+          </div>
+        );
+      
+      case 'cylinder':
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <div 
+              className="w-16 h-20 mx-auto rounded-lg"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                boxShadow: `0 0 20px ${primaryColor}50, inset -5px 0 10px rgba(0,0,0,0.3)`,
+              }}
+            />
+          </div>
+        );
+      
       case 'octahedron':
-        return <Octahedron args={[geometry.params[0]]} {...props}>{material}</Octahedron>;
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <div 
+              className="w-0 h-0 mx-auto"
+              style={{
+                borderLeft: '25px solid transparent',
+                borderRight: '25px solid transparent',
+                borderBottom: `35px solid ${primaryColor}`,
+                filter: `drop-shadow(0 0 15px ${primaryColor}60)`,
+              }}
+            />
+            <div 
+              className="w-0 h-0 mx-auto -mt-1"
+              style={{
+                borderLeft: '25px solid transparent',
+                borderRight: '25px solid transparent',
+                borderTop: `35px solid ${secondaryColor}`,
+                filter: `drop-shadow(0 0 15px ${secondaryColor}60)`,
+              }}
+            />
+          </div>
+        );
+      
+      // Prism shapes
+      case 'triangular prism':
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <div 
+              className="w-0 h-0 mx-auto mb-2"
+              style={{
+                borderLeft: '20px solid transparent',
+                borderRight: '20px solid transparent',
+                borderBottom: `25px solid ${primaryColor}`,
+                filter: `drop-shadow(0 0 15px ${primaryColor}60)`,
+              }}
+            />
+            <div 
+              className="w-10 h-16 mx-auto rounded-sm"
+              style={{
+                background: `linear-gradient(135deg, ${secondaryColor}, ${tertiaryColor})`,
+                boxShadow: `0 0 20px ${secondaryColor}50`,
+              }}
+            />
+          </div>
+        );
+
+      case 'rectangular prism':
+        return (
+          <div 
+            className={`w-20 h-16 mx-auto ${baseClasses}`}
+            style={{
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 50%, ${tertiaryColor} 100%)`,
+              boxShadow: `0 0 25px ${primaryColor}50, inset -8px -8px 15px rgba(0,0,0,0.3)`,
+              borderRadius: '4px',
+              transform: `scale(${scale}) rotateX(10deg) rotateY(10deg)`,
+              transformStyle: 'preserve-3d',
+            }}
+          />
+        );
+
+      case 'pentagonal prism':
+      case 'hexagonal prism':
+      case 'octagonal prism':
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <div 
+              className="w-16 h-16 mx-auto"
+              style={{
+                background: `conic-gradient(from 0deg, ${primaryColor}, ${secondaryColor}, ${tertiaryColor}, ${primaryColor})`,
+                clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)',
+                boxShadow: `0 0 20px ${primaryColor}50`,
+              }}
+            />
+          </div>
+        );
+
+      // Platonic solids
       case 'tetrahedron':
-        return <Tetrahedron args={[geometry.params[0]]} {...props}>{material}</Tetrahedron>;
-      default:
-        return <Box {...props}>{material}</Box>;
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <div 
+              className="w-0 h-0 mx-auto"
+              style={{
+                borderLeft: '25px solid transparent',
+                borderRight: '25px solid transparent',
+                borderBottom: `40px solid ${primaryColor}`,
+                filter: `drop-shadow(0 0 15px ${primaryColor}60) drop-shadow(5px 5px 10px ${secondaryColor}40)`,
+              }}
+            />
+          </div>
+        );
+
+      case 'dodecahedron':
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <div 
+              className="w-16 h-16 mx-auto"
+              style={{
+                background: `radial-gradient(circle at 30% 30%, ${primaryColor}, ${secondaryColor})`,
+                clipPath: 'polygon(50% 0%, 80% 10%, 100% 35%, 85% 70%, 65% 85%, 35% 85%, 15% 70%, 0% 35%, 20% 10%)',
+                boxShadow: `0 0 25px ${primaryColor}60, inset -5px -5px 15px rgba(0,0,0,0.3)`,
+              }}
+            />
+          </div>
+        );
+
+      case 'icosahedron':
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <div 
+              className="w-16 h-16 mx-auto"
+              style={{
+                background: `linear-gradient(45deg, ${primaryColor}, ${secondaryColor}, ${tertiaryColor})`,
+                clipPath: 'polygon(50% 0%, 75% 25%, 100% 50%, 75% 75%, 50% 100%, 25% 75%, 0% 50%, 25% 25%)',
+                boxShadow: `0 0 25px ${secondaryColor}60, inset -8px -8px 20px rgba(0,0,0,0.4)`,
+              }}
+            />
+          </div>
+        );
+
+      case 'voxel':
+        return (
+          <div 
+            className={`grid grid-cols-3 gap-1 ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            {Array.from({ length: 9 }).map((_, i) => (
+              <div 
+                key={i}
+                className="w-6 h-6 rounded-sm"
+                style={{
+                  background: [primaryColor, secondaryColor, tertiaryColor][i % 3],
+                  boxShadow: `0 0 8px ${[primaryColor, secondaryColor, tertiaryColor][i % 3]}40`,
+                  opacity: Math.random() > 0.3 ? 1 : 0.3,
+                }}
+              />
+            ))}
+          </div>
+        );
+      
+      case 'spiral':
+      case 'procedural':
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div 
+                key={i}
+                className="absolute w-8 h-2 rounded-full"
+                style={{
+                  background: `linear-gradient(90deg, ${primaryColor}, ${secondaryColor})`,
+                  transform: `rotate(${i * 36}deg) translateX(${10 + i * 5}px)`,
+                  boxShadow: `0 0 10px ${primaryColor}50`,
+                  top: '50%',
+                  left: '50%',
+                  transformOrigin: '0 50%',
+                }}
+              />
+            ))}
+          </div>
+        );
+      
+      default: // cube
+        return (
+          <div 
+            className={`w-20 h-20 ${baseClasses}`}
+            style={{
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 50%, ${tertiaryColor} 100%)`,
+              boxShadow: `0 0 25px ${primaryColor}50, inset -8px -8px 15px rgba(0,0,0,0.3)`,
+              borderRadius: '8px',
+              transform: `scale(${scale}) rotateX(15deg) rotateY(15deg)`,
+              transformStyle: 'preserve-3d',
+            }}
+          />
+        );
     }
   };
   
-  return renderShape();
-}
-
-// Component to render voxel geometry
-function VoxelShape({ geometry, colors }: { geometry: any; colors?: string[] }) {
-  // Simplified voxel rendering - in production, parse voxel data
-  return (
-    <group>
-      <Box position={[0, 0, 0]} args={[0.5, 0.5, 0.5]}>
-        <meshStandardMaterial color={colors?.[0] || '#ff0000'} />
-      </Box>
-      <Box position={[0.5, 0, 0]} args={[0.5, 0.5, 0.5]}>
-        <meshStandardMaterial color={colors?.[1] || '#00ff00'} />
-      </Box>
-      <Box position={[0, 0.5, 0]} args={[0.5, 0.5, 0.5]}>
-        <meshStandardMaterial color={colors?.[2] || '#0000ff'} />
-      </Box>
-    </group>
-  );
-}
-
-// Component to render procedural geometry
-function ProceduralShape({ geometry, colors }: { geometry: any; colors?: string[] }) {
-  // Simplified procedural rendering - in production, generate based on algorithm
-  const count = geometry.params?.iterations || 3;
-  const shapes = [];
-  
-  for (let i = 0; i < count; i++) {
-    const y = i * 0.5;
-    const scale = 1 - (i * 0.2);
-    shapes.push(
-      <Cylinder
-        key={i}
-        position={[0, y, 0]}
-        args={[scale * 0.3, scale * 0.3, 0.5]}
-        rotation={[0, i * 0.5, 0]}
-      >
-        <meshStandardMaterial color={colors?.[i % colors.length] || '#228b22'} />
-      </Cylinder>
-    );
-  }
-  
-  return <group>{shapes}</group>;
-}
-
-export default function NFT3DViewer({ nft, interactive = true, size = 'medium' }: NFT3DViewerProps) {
-  const sizeMap = {
-    small: { width: 200, height: 200 },
-    medium: { width: 400, height: 400 },
-    large: { width: 600, height: 600 }
-  };
-  
-  const { width, height } = sizeMap[size];
-  const geometry = parseGeometry3D(nft.geometry3d, nft.geometryType);
-  
-  if (!geometry) {
-    return (
-      <div 
-        className="bg-gray-800 rounded-lg flex items-center justify-center"
-        style={{ width, height }}
-      >
-        <p className="text-gray-400">Unable to render 3D model</p>
-      </div>
-    );
-  }
-  
   return (
     <div 
-      className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg overflow-hidden"
-      style={{ width, height }}
+      className="flex items-center justify-center"
+      style={{ 
+        width, 
+        height,
+        perspective: '200px',
+      }}
     >
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 50 }}
-        gl={{ preserveDrawingBuffer: true }}
-      >
-        {/* Lighting */}
-        <ambientLight intensity={0.5} />
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-        <pointLight position={[-10, -10, -10]} />
-        
-        {/* Render based on geometry type */}
-        {geometry.type === 'parametric' && (
-          <ParametricShape geometry={geometry} colors={nft.colors} />
-        )}
-        {geometry.type === 'voxel' && (
-          <VoxelShape geometry={geometry} colors={nft.colors} />
-        )}
-        {geometry.type === 'procedural' && (
-          <ProceduralShape geometry={geometry} colors={nft.colors} />
-        )}
-        
-        {/* Controls */}
-        {interactive && (
-          <OrbitControls
-            enablePan={false}
-            enableZoom={false}
-            minPolarAngle={Math.PI / 4}
-            maxPolarAngle={Math.PI / 1.5}
-          />
-        )}
-      </Canvas>
+      {renderShape()}
     </div>
   );
 }
+
+export default NFT3DViewer;

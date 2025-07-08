@@ -38,7 +38,7 @@ let sdkInstance: any = null;
 
 export const useStore = create<AppState>((set, get) => ({
   // Initial state
-  network: (typeof window !== 'undefined' && localStorage.getItem('dash-nft-network') as 'mainnet' | 'testnet') || 'testnet', // Default to testnet
+  network: 'testnet', // Default to testnet, will be hydrated from localStorage
   identityId: null,
   isAuthenticated: false,
   userNFTs: [],
@@ -108,7 +108,7 @@ export const useStore = create<AppState>((set, get) => ({
         }
       } catch (error) {
         // Check if it's a transport/CORS error
-        if (error.message?.includes('Failed to fetch') || error.message?.includes('Transport error')) {
+        if ((error instanceof Error && error.message?.includes('Failed to fetch')) || (error instanceof Error && error.message?.includes('Transport error'))) {
           throw new Error(
             'Unable to connect to Dash Platform. This is likely due to CORS restrictions. ' +
             'Please see README-CONTRACT.md for solutions.'

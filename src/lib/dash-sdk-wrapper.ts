@@ -94,7 +94,7 @@ export class DashSDK {
       console.error('Error details:', error);
       
       // Provide helpful error message if WASM isn't built
-      if (error.message?.includes('WASM') || error.message?.includes('wasm')) {
+      if ((error instanceof Error && error.message?.includes('WASM')) || (error instanceof Error && error.message?.includes('wasm'))) {
         throw new Error(
           'WASM SDK not available. Please build the WASM module first:\n' +
           'cd /Users/quantum/src/platform/packages/wasm-sdk && ./build.sh'
@@ -118,23 +118,23 @@ export class DashSDK {
       }
       
       // Get the WASM module
-      const wasm = this.sdk.getWasmModule();
+      const wasm = this.sdk.getWasmModule() as any;
       
       // NEVER use unproved fetching - always use proved
       console.log('Using PROVED fetching only as required');
       
-      console.log('Available balance methods:', Object.keys(wasm).filter(k => k.toLowerCase().includes('balance')).slice(0, 10));
+      console.log('Available balance methods:', wasm ? Object.keys(wasm).filter(k => k.toLowerCase().includes('balance')).slice(0, 10) : []);
       
       // Try to fetch just the balance first (simpler query)
       let balance = 0;
       
-      if (typeof wasm.fetchIdentityBalance === 'function') {
+      if (wasm && typeof wasm.fetchIdentityBalance === 'function') {
         console.log('Using fetchIdentityBalance...');
         
         let fetchOptions = null;
         try {
           // Create FetchOptions - check if constructor needs parameters
-          if (wasm.FetchOptions) {
+          if (wasm && wasm.FetchOptions) {
             fetchOptions = new wasm.FetchOptions();
             
             // ALWAYS use proved fetching
@@ -146,7 +146,7 @@ export class DashSDK {
           } else {
             console.warn('FetchOptions not available, trying without options');
             // Try without options
-            const balanceResult = await wasm.fetchIdentityBalance(wasmSdk, id);
+            const balanceResult = await wasm!.fetchIdentityBalance(wasmSdk, id);
             console.log('Balance result without options:', balanceResult);
             
             if (typeof balanceResult === 'number') {
@@ -154,10 +154,10 @@ export class DashSDK {
             } else if (balanceResult && typeof balanceResult.balance === 'number') {
               balance = balanceResult.balance;
             }
-            return;
+            // Continue to the main flow
           }
           
-          const balanceResult = await wasm.fetchIdentityBalance(wasmSdk, id, fetchOptions);
+          const balanceResult = await wasm!.fetchIdentityBalance(wasmSdk, id, fetchOptions);
           console.log('Balance result:', balanceResult);
           
           if (typeof balanceResult === 'number') {
@@ -167,7 +167,7 @@ export class DashSDK {
           }
         } catch (error) {
           console.error('fetchIdentityBalance failed:', error);
-          if (error.message?.includes('Failed to fetch')) {
+          if (error instanceof Error && error.message?.includes('Failed to fetch')) {
             console.error('This is likely due to SSL certificate issues with testnet evonodes.');
             console.error('See SSL_CERTIFICATE_ISSUE.md for solutions.');
           }
@@ -204,23 +204,23 @@ export class DashSDK {
     } catch (error) {
       console.error('Failed to get identity:', error);
       console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-        toString: error.toString()
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined,
+        toString: error instanceof Error ? error.toString() : String(error)
       });
       
       // NEVER return mock data - only real data or errors
-      if (error.message?.includes('Failed to fetch') || error.message?.includes('Transport error')) {
+      if ((error instanceof Error && error.message?.includes('Failed to fetch')) || (error instanceof Error && error.message?.includes('Transport error'))) {
         throw new Error(
           `Identity fetch failed due to SSL certificate issues. ` +
           `Browsers reject connections to testnet IPs with self-signed certificates. ` +
           `See SSL_CERTIFICATE_ISSUE.md for solutions. ` +
-          `Original error: ${error.message}`
+          `Original error: ${error instanceof Error ? error.message : String(error)}`
         );
       }
       
-      throw new Error(`Identity fetch failed: ${error.message || error.toString() || 'Unknown error'}`);
+      throw new Error(`Identity fetch failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -238,16 +238,16 @@ export class DashSDK {
       console.log(`Querying documents from contract: ${contractId}`);
       console.log('Query parameters:', query);
       
-      const wasmModule = this.sdk.getWasmModule();
-      const wasmSdk = this.sdk.getWasmSdk();
+      const wasmModule = this.sdk.getWasmModule() as any;
+      const wasmSdk = this.sdk.getWasmSdk() as any;
       const documentType = query.documentType || 'nft3d';
       
       console.log(`Document type: ${documentType}`);
       
       // Check if fetch_documents exists
-      if (!wasmModule.fetch_documents) {
+      if (!wasmModule || !wasmModule.fetch_documents) {
         console.error('fetch_documents not found in WASM module');
-        console.log('Available document methods:', Object.keys(wasmModule).filter(k => k.includes('document') || k.includes('Document')).slice(0, 10));
+        console.log('Available document methods:', wasmModule ? Object.keys(wasmModule).filter(k => k.includes('document') || k.includes('Document')).slice(0, 10) : []);
         return [];
       }
       
@@ -283,7 +283,7 @@ export class DashSDK {
       console.log('Documents response:', response);
       const documents = response.items || [];
       
-      return documents.map(doc => ({
+      return documents.map((doc: any) => ({
         id: doc.$id,
         ownerId: doc.$ownerId,
         data: {
@@ -303,7 +303,7 @@ export class DashSDK {
       console.error('Failed to query documents:', error);
       
       // Check if it's a contract not found error
-      if (error.message?.includes('contract') || error.message?.includes('not found')) {
+      if ((error instanceof Error && error.message?.includes('contract')) || (error instanceof Error && error.message?.includes('not found'))) {
         console.error(`Contract ${contractId} not found on the network. Please register it first.`);
         return [];
       }
@@ -317,12 +317,12 @@ export class DashSDK {
     if (!this.initialized) throw new Error('SDK not initialized');
     
     try {
-      const context = await this.sdk.createContext();
+      const context = await this.sdk.createContext() as any;
       return {
-        height: context.blockHeight,
-        timestamp: context.blockTime,
-        coreChainLockedHeight: context.coreChainLockedHeight,
-        version: context.version
+        height: context.blockHeight || 0,
+        timestamp: context.blockTime || Date.now(),
+        coreChainLockedHeight: context.coreChainLockedHeight || 0,
+        version: context.version || '1.0.0'
       };
     } catch (error) {
       console.error('Failed to get platform state:', error);
@@ -360,8 +360,8 @@ export class DashSDK {
     }
 
     try {
-      const wasmModule = this.sdk.getWasmModule();
-      const wasmSdk = this.sdk.getWasmSdk();
+      const wasmModule = this.sdk.getWasmModule() as any;
+      const wasmSdk = this.sdk.getWasmSdk() as any;
       
       // Prepare document data with required transfer fields
       const now = Date.now();
@@ -404,8 +404,8 @@ export class DashSDK {
     if (!this.initialized) throw new Error('SDK not initialized');
     
     try {
-      const wasmModule = this.sdk.getWasmModule();
-      const wasmSdk = this.sdk.getWasmSdk();
+      const wasmModule = this.sdk.getWasmModule() as any;
+      const wasmSdk = this.sdk.getWasmSdk() as any;
       
       // Platform handles transfers natively for documents with transferable: 1
       // Use the transfer method provided by the platform

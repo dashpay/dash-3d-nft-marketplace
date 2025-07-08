@@ -16,6 +16,11 @@ export interface NFT3D {
   transferredAt?: number; // System field $transferredAt
   transferredAtBlockHeight?: number; // System field $transferredAtBlockHeight
   transferredAtCoreBlockHeight?: number; // System field $transferredAtCoreBlockHeight
+  // Additional UI fields for premium experience
+  price?: string;
+  collection?: string;
+  creator?: string;
+  rarity?: 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Mythic';
 }
 
 // Transfer history is tracked by the platform through system fields
