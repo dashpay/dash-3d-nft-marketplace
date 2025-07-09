@@ -55,24 +55,40 @@ export function NFT3DViewer({
       case 'sphere':
         return (
           <div 
-            className={`w-24 h-24 rounded-full ${baseClasses}`}
+            className={`w-20 h-20 rounded-full ${baseClasses}`}
             style={{
               background: `radial-gradient(circle at 30% 30%, ${primaryColor}, ${secondaryColor})`,
-              boxShadow: `0 0 30px ${primaryColor}40, inset -10px -10px 20px rgba(0,0,0,0.3)`,
+              boxShadow: `0 0 25px ${primaryColor}50, inset -8px -8px 15px rgba(0,0,0,0.3)`,
               transform: `scale(${scale})`,
             }}
           />
         );
       
-      case 'torus':
+      case 'cube':
         return (
-          <div className="relative" style={{ transform: `scale(${scale})` }}>
+          <div 
+            className={`w-16 h-16 ${baseClasses}`}
+            style={{
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 50%, ${tertiaryColor} 100%)`,
+              boxShadow: `0 0 20px ${primaryColor}40, inset -6px -6px 12px rgba(0,0,0,0.3)`,
+              borderRadius: '3px',
+              transform: `scale(${scale}) rotateX(12deg) rotateY(12deg)`,
+              transformStyle: 'preserve-3d',
+            }}
+          />
+        );
+
+      case 'cylinder':
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
             <div 
-              className={`w-24 h-24 rounded-full border-8 ${baseClasses}`}
+              className="w-12 h-16 mx-auto rounded-lg"
               style={{
-                borderColor: primaryColor,
-                background: `conic-gradient(from 0deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`,
-                boxShadow: `0 0 25px ${primaryColor}60, inset 0 0 15px rgba(0,0,0,0.4)`,
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                boxShadow: `0 0 18px ${primaryColor}40, inset -4px 0 8px rgba(0,0,0,0.3)`,
               }}
             />
           </div>
@@ -87,33 +103,57 @@ export function NFT3DViewer({
             <div 
               className="w-0 h-0 mx-auto"
               style={{
-                borderLeft: '30px solid transparent',
-                borderRight: '30px solid transparent',
-                borderBottom: `60px solid ${primaryColor}`,
-                filter: `drop-shadow(0 0 15px ${primaryColor}60)`,
+                borderLeft: '20px solid transparent',
+                borderRight: '20px solid transparent',
+                borderBottom: `40px solid ${primaryColor}`,
+                filter: `drop-shadow(0 0 12px ${primaryColor}50)`,
               }}
             />
             <div 
-              className="w-16 h-4 rounded-full mx-auto -mt-1"
+              className="w-10 h-2 rounded-full mx-auto -mt-1"
               style={{
                 background: `linear-gradient(45deg, ${secondaryColor}, ${primaryColor})`,
-                boxShadow: `0 0 15px ${secondaryColor}40`,
+                boxShadow: `0 0 8px ${secondaryColor}40`,
               }}
             />
           </div>
         );
-      
-      case 'cylinder':
+
+      case 'pyramid':
         return (
           <div 
             className={`relative ${baseClasses}`}
             style={{ transform: `scale(${scale})` }}
           >
             <div 
-              className="w-16 h-20 mx-auto rounded-lg"
+              className="w-0 h-0 mx-auto"
               style={{
-                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
-                boxShadow: `0 0 20px ${primaryColor}50, inset -5px 0 10px rgba(0,0,0,0.3)`,
+                borderLeft: '18px solid transparent',
+                borderRight: '18px solid transparent',
+                borderBottom: `35px solid ${primaryColor}`,
+                filter: `drop-shadow(0 0 12px ${primaryColor}50)`,
+              }}
+            />
+            <div 
+              className="w-9 h-2 mx-auto -mt-1"
+              style={{
+                background: `linear-gradient(45deg, ${secondaryColor}, ${primaryColor})`,
+                borderRadius: '2px',
+                boxShadow: `0 0 8px ${secondaryColor}40`,
+              }}
+            />
+          </div>
+        );
+
+      case 'torus':
+        return (
+          <div className="relative" style={{ transform: `scale(${scale})` }}>
+            <div 
+              className={`w-20 h-20 rounded-full border-6 ${baseClasses}`}
+              style={{
+                borderColor: primaryColor,
+                background: `conic-gradient(from 0deg, ${primaryColor}, ${secondaryColor}, ${primaryColor})`,
+                boxShadow: `0 0 20px ${primaryColor}50, inset 0 0 12px rgba(0,0,0,0.3)`,
               }}
             />
           </div>
@@ -125,21 +165,23 @@ export function NFT3DViewer({
             className={`relative ${baseClasses}`}
             style={{ transform: `scale(${scale})` }}
           >
+            {/* Top pyramid */}
             <div 
               className="w-0 h-0 mx-auto"
               style={{
-                borderLeft: '25px solid transparent',
-                borderRight: '25px solid transparent',
-                borderBottom: `35px solid ${primaryColor}`,
+                borderLeft: '20px solid transparent',
+                borderRight: '20px solid transparent',
+                borderBottom: `30px solid ${primaryColor}`,
                 filter: `drop-shadow(0 0 15px ${primaryColor}60)`,
               }}
             />
+            {/* Bottom pyramid */}
             <div 
               className="w-0 h-0 mx-auto -mt-1"
               style={{
-                borderLeft: '25px solid transparent',
-                borderRight: '25px solid transparent',
-                borderTop: `35px solid ${secondaryColor}`,
+                borderLeft: '20px solid transparent',
+                borderRight: '20px solid transparent',
+                borderTop: `30px solid ${secondaryColor}`,
                 filter: `drop-shadow(0 0 15px ${secondaryColor}60)`,
               }}
             />
@@ -154,19 +196,19 @@ export function NFT3DViewer({
             style={{ transform: `scale(${scale})` }}
           >
             <div 
-              className="w-0 h-0 mx-auto mb-2"
+              className="w-0 h-0 mx-auto mb-1"
               style={{
-                borderLeft: '20px solid transparent',
-                borderRight: '20px solid transparent',
-                borderBottom: `25px solid ${primaryColor}`,
-                filter: `drop-shadow(0 0 15px ${primaryColor}60)`,
+                borderLeft: '15px solid transparent',
+                borderRight: '15px solid transparent',
+                borderBottom: `20px solid ${primaryColor}`,
+                filter: `drop-shadow(0 0 10px ${primaryColor}50)`,
               }}
             />
             <div 
-              className="w-10 h-16 mx-auto rounded-sm"
+              className="w-8 h-12 mx-auto rounded-sm"
               style={{
                 background: `linear-gradient(135deg, ${secondaryColor}, ${tertiaryColor})`,
-                boxShadow: `0 0 20px ${secondaryColor}50`,
+                boxShadow: `0 0 15px ${secondaryColor}40`,
               }}
             />
           </div>
@@ -175,11 +217,11 @@ export function NFT3DViewer({
       case 'rectangular prism':
         return (
           <div 
-            className={`w-20 h-16 mx-auto ${baseClasses}`}
+            className={`w-16 h-12 mx-auto ${baseClasses}`}
             style={{
               background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 50%, ${tertiaryColor} 100%)`,
-              boxShadow: `0 0 25px ${primaryColor}50, inset -8px -8px 15px rgba(0,0,0,0.3)`,
-              borderRadius: '4px',
+              boxShadow: `0 0 18px ${primaryColor}40, inset -6px -6px 10px rgba(0,0,0,0.3)`,
+              borderRadius: '3px',
               transform: `scale(${scale}) rotateX(10deg) rotateY(10deg)`,
               transformStyle: 'preserve-3d',
             }}
@@ -187,7 +229,39 @@ export function NFT3DViewer({
         );
 
       case 'pentagonal prism':
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <div 
+              className="w-14 h-14 mx-auto"
+              style={{
+                background: `conic-gradient(from 0deg, ${primaryColor}, ${secondaryColor}, ${tertiaryColor}, ${primaryColor})`,
+                clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)',
+                boxShadow: `0 0 16px ${primaryColor}50`,
+              }}
+            />
+          </div>
+        );
+
       case 'hexagonal prism':
+        return (
+          <div 
+            className={`relative ${baseClasses}`}
+            style={{ transform: `scale(${scale})` }}
+          >
+            <div 
+              className="w-14 h-14 mx-auto"
+              style={{
+                background: `conic-gradient(from 0deg, ${primaryColor}, ${secondaryColor}, ${tertiaryColor}, ${primaryColor})`,
+                clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
+                boxShadow: `0 0 16px ${primaryColor}50`,
+              }}
+            />
+          </div>
+        );
+
       case 'octagonal prism':
         return (
           <div 
@@ -195,11 +269,11 @@ export function NFT3DViewer({
             style={{ transform: `scale(${scale})` }}
           >
             <div 
-              className="w-16 h-16 mx-auto"
+              className="w-14 h-14 mx-auto"
               style={{
                 background: `conic-gradient(from 0deg, ${primaryColor}, ${secondaryColor}, ${tertiaryColor}, ${primaryColor})`,
-                clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)',
-                boxShadow: `0 0 20px ${primaryColor}50`,
+                clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
+                boxShadow: `0 0 16px ${primaryColor}50`,
               }}
             />
           </div>
@@ -215,10 +289,10 @@ export function NFT3DViewer({
             <div 
               className="w-0 h-0 mx-auto"
               style={{
-                borderLeft: '25px solid transparent',
-                borderRight: '25px solid transparent',
-                borderBottom: `40px solid ${primaryColor}`,
-                filter: `drop-shadow(0 0 15px ${primaryColor}60) drop-shadow(5px 5px 10px ${secondaryColor}40)`,
+                borderLeft: '18px solid transparent',
+                borderRight: '18px solid transparent',
+                borderBottom: `30px solid ${primaryColor}`,
+                filter: `drop-shadow(0 0 12px ${primaryColor}50) drop-shadow(3px 3px 8px ${secondaryColor}40)`,
               }}
             />
           </div>
@@ -231,11 +305,11 @@ export function NFT3DViewer({
             style={{ transform: `scale(${scale})` }}
           >
             <div 
-              className="w-16 h-16 mx-auto"
+              className="w-14 h-14 mx-auto"
               style={{
                 background: `radial-gradient(circle at 30% 30%, ${primaryColor}, ${secondaryColor})`,
                 clipPath: 'polygon(50% 0%, 80% 10%, 100% 35%, 85% 70%, 65% 85%, 35% 85%, 15% 70%, 0% 35%, 20% 10%)',
-                boxShadow: `0 0 25px ${primaryColor}60, inset -5px -5px 15px rgba(0,0,0,0.3)`,
+                boxShadow: `0 0 20px ${primaryColor}50, inset -4px -4px 10px rgba(0,0,0,0.3)`,
               }}
             />
           </div>
@@ -248,11 +322,11 @@ export function NFT3DViewer({
             style={{ transform: `scale(${scale})` }}
           >
             <div 
-              className="w-16 h-16 mx-auto"
+              className="w-14 h-14 mx-auto"
               style={{
                 background: `linear-gradient(45deg, ${primaryColor}, ${secondaryColor}, ${tertiaryColor})`,
                 clipPath: 'polygon(50% 0%, 75% 25%, 100% 50%, 75% 75%, 50% 100%, 25% 75%, 0% 50%, 25% 25%)',
-                boxShadow: `0 0 25px ${secondaryColor}60, inset -8px -8px 20px rgba(0,0,0,0.4)`,
+                boxShadow: `0 0 20px ${secondaryColor}50, inset -6px -6px 12px rgba(0,0,0,0.4)`,
               }}
             />
           </div>

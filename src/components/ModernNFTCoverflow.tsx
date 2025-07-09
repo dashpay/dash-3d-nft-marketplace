@@ -371,27 +371,29 @@ export function ModernNFTCoverflow({ nfts, onNFTClick, className = '' }: ModernN
       </div>
 
       {/* Bottom Controls */}
-      <div className="flex justify-center mt-8 space-x-6">
-        {/* Dots Indicator */}
-        <div className="flex space-x-2">
-          {nfts.map((_, index) => (
-            <motion.button
-              key={index}
-              onClick={() => handleDotClick(index)}
-              className={`
-                w-2 h-2 rounded-full transition-all duration-300
-                ${index === currentIndex 
-                  ? 'bg-[#00D4FF] w-8 shadow-lg shadow-[#00D4FF]/50' 
-                  : 'bg-white/30 hover:bg-white/50'
-                }
-              `}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
-            />
-          ))}
+      <div className="flex justify-between items-center mt-8">
+        {/* Dots Indicator - Centered */}
+        <div className="flex-1 flex justify-center">
+          <div className="flex space-x-2">
+            {nfts.map((_, index) => (
+              <motion.button
+                key={index}
+                onClick={() => handleDotClick(index)}
+                className={`
+                  w-2 h-2 rounded-full transition-all duration-300
+                  ${index === currentIndex 
+                    ? 'bg-[#00D4FF] w-8 shadow-lg shadow-[#00D4FF]/50' 
+                    : 'bg-white/30 hover:bg-white/50'
+                  }
+                `}
+                whileHover={{ scale: 1.2 }}
+                whileTap={{ scale: 0.9 }}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Auto-play Toggle */}
+        {/* Auto-play Toggle - Right Side */}
         <motion.button
           onClick={() => setIsAutoPlaying(!isAutoPlaying)}
           className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm 

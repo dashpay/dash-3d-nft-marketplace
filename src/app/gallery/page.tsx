@@ -99,19 +99,19 @@ export default function GalleryPage() {
       <div className="relative max-w-7xl mx-auto">
         {/* User Actions - Top Right */}
         <div className="flex justify-end px-8 pt-8 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="text-sm bg-white/5 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/10">
+          <div className="flex items-center gap-6">
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/10 min-w-[240px]">
               <div className="text-gray-400 text-xs uppercase tracking-wider mb-1">Identity</div>
-              <div className="text-[#00D4FF] font-mono font-medium">
+              <div className="text-[#00D4FF] font-mono font-medium text-sm whitespace-nowrap">
                 {identityId?.slice(0, 8)}...{identityId?.slice(-8)}
               </div>
             </div>
             
             <button
               onClick={logout}
-              className="px-8 py-3 text-sm font-medium text-white hover:text-[#00D4FF] transition-all duration-200
+              className="px-10 py-4 text-sm font-medium text-white hover:text-[#00D4FF] transition-all duration-200
                          bg-white/5 hover:bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10
-                         hover:border-[#00D4FF]/30 hover:scale-105"
+                         hover:border-[#00D4FF]/30 hover:scale-105 min-w-[100px] whitespace-nowrap"
             >
               Logout
             </button>
@@ -190,16 +190,16 @@ export default function GalleryPage() {
             )}
           </div>
         ) : (
-          <div className="space-y-20">
+          <div className="space-y-32">
             {/* Modern 3D Coverflow */}
             <ModernNFTCoverflow 
               nfts={displayNFTs} 
               onNFTClick={handleNFTClick}
-              className="mb-20"
+              className="mb-32"
             />
             
             {/* OpenSea-style NFT Listing */}
-            <div className="px-4 mt-20">
+            <div className="px-12 mt-32">
               {/* Header Bar */}
               <div className="flex items-center justify-between mb-8 gap-4">
                 <div className="text-white font-medium">
@@ -223,7 +223,7 @@ export default function GalleryPage() {
               </div>
 
               {/* NFT Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" style={{ marginLeft: '60px', marginRight: '60px' }}>
                 {displayNFTs.map((nft) => (
                   <div
                     key={nft.id}
