@@ -181,7 +181,7 @@ function NFT3DViewerInternal({
   
   useEffect(() => {
     // Extend Three.js namespace before rendering Canvas
-    extend(THREE);
+    extend(THREE as any);
     setIsExtended(true);
   }, []);
   

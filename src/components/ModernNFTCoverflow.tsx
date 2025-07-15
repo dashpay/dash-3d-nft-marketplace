@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { NFT3D } from '@/types/nft';
 import { NFT3DViewer } from './NFT3DViewer';
+import ClientOnly from './ClientOnly';
 
 interface ModernNFTCoverflowProps {
   nfts: NFT3D[];
@@ -13,42 +14,64 @@ interface ModernNFTCoverflowProps {
 
 // Floating particles background component
 const FloatingParticles = () => {
+  const [isClient, setIsClient] = useState(false);
   const particles = Array.from({ length: 25 }, (_, i) => i);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((particle) => (
-        <motion.div
-          key={particle}
-          className="absolute w-1 h-1 bg-gradient-to-r from-[#00D4FF] to-[#8B5CF6] rounded-full opacity-20"
-          initial={{
-            x: Math.random() * window?.innerWidth || 1920,
-            y: Math.random() * window?.innerHeight || 1080,
-          }}
-          animate={{
-            x: Math.random() * (window?.innerWidth || 1920),
-            y: Math.random() * (window?.innerHeight || 1080),
-          }}
-          transition={{
-            duration: Math.random() * 20 + 10,
-            repeat: Infinity,
-            repeatType: 'reverse',
-            ease: 'linear',
-          }}
-        />
-      ))}
+      {particles.map((particle) => {
+        // Use deterministic values based on particle index for SSR consistency
+        const seed = particle * 12345; // Deterministic seed
+        const pseudoRandom1 = ((seed * 9301 + 49297) % 233280) / 233280;
+        const pseudoRandom2 = (((seed + 1) * 9301 + 49297) % 233280) / 233280;
+        const pseudoRandom3 = (((seed + 2) * 9301 + 49297) % 233280) / 233280;
+        const pseudoRandom4 = (((seed + 3) * 9301 + 49297) % 233280) / 233280;
+        const pseudoRandom5 = (((seed + 4) * 9301 + 49297) % 233280) / 233280;
+        
+        return (
+          <motion.div
+            key={particle}
+            className="absolute w-1 h-1 rounded-full opacity-20"
+            style={{
+              background: 'linear-gradient(90deg, rgb(0, 212, 255), rgb(139, 92, 246))'
+            }}
+            initial={{
+              x: pseudoRandom1 * (typeof window !== 'undefined' ? window.innerWidth : 1920),
+              y: pseudoRandom2 * (typeof window !== 'undefined' ? window.innerHeight : 1080),
+            }}
+            animate={{
+              x: pseudoRandom3 * (typeof window !== 'undefined' ? window.innerWidth : 1920),
+              y: pseudoRandom4 * (typeof window !== 'undefined' ? window.innerHeight : 1080),
+            }}
+            transition={{
+              duration: pseudoRandom5 * 20 + 10,
+              repeat: Infinity,
+              repeatType: 'reverse',
+              ease: 'linear',
+            }}
+          />
+        );
+      })}
     </div>
   );
 };
 
-// Rarity color mapping
-const getRarityColor = (rarity?: string) => {
+// Rarity color mapping - use inline styles to avoid hydration issues
+const getRarityStyle = (rarity?: string) => {
   switch (rarity) {
-    case 'Mythic': return 'from-[#FF0080] to-[#8B5CF6]';
-    case 'Legendary': return 'from-[#FFD700] to-[#FF6B00]';
-    case 'Epic': return 'from-[#8B5CF6] to-[#00D4FF]';
-    case 'Rare': return 'from-[#00D4FF] to-[#00C896]';
-    default: return 'from-[#6B7280] to-[#374151]';
+    case 'Mythic': return { background: 'linear-gradient(135deg, #FF0080, #8B5CF6)' };
+    case 'Legendary': return { background: 'linear-gradient(135deg, #FFD700, #FF6B00)' };
+    case 'Epic': return { background: 'linear-gradient(135deg, #8B5CF6, #00D4FF)' };
+    case 'Rare': return { background: 'linear-gradient(135deg, #00D4FF, #00C896)' };
+    default: return { background: 'linear-gradient(135deg, #6B7280, #374151)' };
   }
 };
 
@@ -128,7 +151,9 @@ export function ModernNFTCoverflow({ nfts, onNFTClick, className = '' }: ModernN
   return (
     <div className={`relative w-full ${className}`}>
       {/* Floating Particles Background */}
-      <FloatingParticles />
+      <ClientOnly>
+        <FloatingParticles />
+      </ClientOnly>
       
       {/* Grid Background */}
       <div className="absolute inset-0 opacity-10">
@@ -147,7 +172,7 @@ export function ModernNFTCoverflow({ nfts, onNFTClick, className = '' }: ModernN
       {/* Main Coverflow Container */}
       <div 
         ref={containerRef}
-        className="relative h-[480px] w-full overflow-hidden rounded-3xl"
+        className="relative h-[520px] lg:h-[580px] w-full overflow-hidden rounded-3xl"
         style={{
           background: 'transparent',
           perspective: '1200px',
@@ -184,7 +209,7 @@ export function ModernNFTCoverflow({ nfts, onNFTClick, className = '' }: ModernN
 
               return (
                 <motion.div
-                  key={nft.id}
+                  key={nft.id || `coverflow-${index}`}
                   className="absolute cursor-pointer"
                   animate={{
                     opacity,
@@ -245,10 +270,10 @@ export function ModernNFTCoverflow({ nfts, onNFTClick, className = '' }: ModernN
                   >
                     {/* Outer Glow Effect */}
                     <div 
-                      className={`
-                        absolute -inset-1 rounded-3xl opacity-60 blur-2xl transition-all duration-500
-                        ${isActive ? 'bg-gradient-to-br from-[#00D4FF]/30 via-[#8B5CF6]/20 to-[#FF0080]/25' : ''}
-                      `}
+                      className="absolute -inset-1 rounded-3xl opacity-60 blur-2xl transition-all duration-500"
+                      style={isActive ? {
+                        background: 'linear-gradient(135deg, rgba(0,212,255,0.3), rgba(139,92,246,0.2), rgba(255,0,128,0.25))'
+                      } : {}}
                     />
                     
                     {/* Card Header - Proportional padding */}
@@ -371,7 +396,7 @@ export function ModernNFTCoverflow({ nfts, onNFTClick, className = '' }: ModernN
       </div>
 
       {/* Bottom Controls */}
-      <div className="flex justify-between items-center mt-8">
+      <div className="flex justify-between items-center mt-12 lg:mt-16">
         {/* Dots Indicator - Centered */}
         <div className="flex-1 flex justify-center">
           <div className="flex space-x-2">

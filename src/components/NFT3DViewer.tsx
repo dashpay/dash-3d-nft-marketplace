@@ -1,6 +1,6 @@
 'use client';
 
-import { NFT3D } from '@/types/nft';
+import { NFT3D, parseGeometry3D } from '@/types/nft';
 
 interface NFT3DViewerProps {
   nft: NFT3D;
@@ -30,18 +30,14 @@ export function NFT3DViewer({
   let shapeType = nft.name.toLowerCase(); // Use the NFT name as shape type
   
   // Fallback to parsing geometry if needed
-  try {
-    const geometry = JSON.parse(nft.geometry3d);
-    if (geometry.shape && !shapeType) {
-      shapeType = geometry.shape;
-    }
-  } catch (e) {
+  const geometry = parseGeometry3D(nft.geometry3d, nft.geometryType);
+  if (geometry?.shape && !shapeType) {
+    shapeType = geometry.shape;
+  } else if (!shapeType) {
     // fallback to geometryType
-    if (!shapeType) {
-      if (nft.geometryType === 'parametric') shapeType = 'cube';
-      if (nft.geometryType === 'voxel') shapeType = 'voxel';
-      if (nft.geometryType === 'procedural') shapeType = 'spiral';
-    }
+    if (nft.geometryType === 'parametric') shapeType = 'cube';
+    if (nft.geometryType === 'voxel') shapeType = 'voxel';
+    if (nft.geometryType === 'procedural') shapeType = 'spiral';
   }
 
   const primaryColor = nft.colors?.[0] || '#00D4FF';

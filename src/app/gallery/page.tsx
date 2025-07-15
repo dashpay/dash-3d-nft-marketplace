@@ -4,12 +4,20 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/store/useStore';
 import { getNFTSDK } from '@/lib/dash-sdk';
-import NFT3DViewer from '@/components/NFT3DViewer';
+import { NFT3DViewer } from '@/components/NFT3DViewer';
 import { ModernNFTCoverflow } from '@/components/ModernNFTCoverflow';
-import { NFT3D } from '@/types/nft';
+import SearchFiltersComponent from '@/components/SearchFilters';
+import { CreateListing } from '@/components/CreateListing';
+import { BiddingInterface } from '@/components/BiddingInterface';
+import { NFTCard } from '@/components/NFTCard';
+import { NFT3D, NFTListing, NFTAuction, NFTBid, SortOptions } from '@/types/nft';
 import { PREMIUM_MOCK_NFTS } from '@/lib/premium-mock-data';
+import { NFTWithListing, searchAndFilterNFTs } from '@/lib/search';
+import { UsernameDisplay } from '@/components/auth/UsernameDisplay';
+import { PaginatedGallery } from '@/components/gallery/PaginatedGallery';
+import ClientOnly from '@/components/ClientOnly';
 
-export default function GalleryPage() {
+function GalleryPageInner() {
   const router = useRouter();
   const { 
     network,
@@ -18,13 +26,29 @@ export default function GalleryPage() {
     userNFTs, 
     setUserNFTs, 
     selectNFT,
-    logout 
+    logout,
+    // Marketplace state
+    listings,
+    auctions,
+    userBids,
+    searchFilters,
+    sortBy,
+    // Marketplace actions
+    createListing,
+    createAuction,
+    placeBid,
+    buyNFT,
+    setSearchFilters,
+    setSortBy
   } = useStore();
   
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedTab, setSelectedTab] = useState<'owned' | 'marketplace'>('owned');
+  const [selectedTab, setSelectedTab] = useState<'owned' | 'marketplace' | 'enhanced'>('owned');
   const [marketNFTs, setMarketNFTs] = useState<NFT3D[]>([]);
-  const [sortBy, setSortBy] = useState<'recent' | 'price-low' | 'price-high' | 'name'>('recent');
+  const [selectedNFT, setSelectedNFT] = useState<NFT3D | null>(null);
+  const [showCreateListing, setShowCreateListing] = useState(false);
+  const [showBiddingInterface, setShowBiddingInterface] = useState(false);
+  const [selectedAuction, setSelectedAuction] = useState<NFTAuction | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -58,42 +82,72 @@ export default function GalleryPage() {
 
   const handleNFTClick = (nft: NFT3D) => {
     selectNFT(nft);
-    router.push(`/nft/${nft.id}`);
-  };
-
-  // Sort function
-  const sortNFTs = (nfts: NFT3D[], criteria: string) => {
-    const sortedNFTs = [...nfts];
-    
-    switch (criteria) {
-      case 'price-low':
-        return sortedNFTs.sort((a, b) => {
-          const priceA = parseFloat(a.price.replace(' DASH', ''));
-          const priceB = parseFloat(b.price.replace(' DASH', ''));
-          return priceA - priceB;
-        });
-      case 'price-high':
-        return sortedNFTs.sort((a, b) => {
-          const priceA = parseFloat(a.price.replace(' DASH', ''));
-          const priceB = parseFloat(b.price.replace(' DASH', ''));
-          return priceB - priceA;
-        });
-      case 'name':
-        return sortedNFTs.sort((a, b) => a.name.localeCompare(b.name));
-      case 'recent':
-      default:
-        return sortedNFTs.sort((a, b) => b.createdAt - a.createdAt);
+    if (nft.id) {
+      router.push(`/nft/${nft.id}`);
     }
   };
 
+  const handleCreateListing = (nft: NFT3D) => {
+    setSelectedNFT(nft);
+    setShowCreateListing(true);
+  };
+
+  const handleQuickBuy = async (nft: NFT3D, listing: NFTListing) => {
+    try {
+      await buyNFT(listing.id);
+      // TODO: Show success message
+    } catch (error) {
+      console.error('Failed to buy NFT:', error);
+    }
+  };
+
+  const handlePlaceBid = (nft: NFT3D, auction: NFTAuction) => {
+    setSelectedNFT(nft);
+    setSelectedAuction(auction);
+    setShowBiddingInterface(true);
+  };
+
+  const handleBidSubmit = async (amount: string) => {
+    if (!selectedAuction) return;
+    
+    try {
+      await placeBid(selectedAuction.id, amount);
+      setShowBiddingInterface(false);
+      setSelectedAuction(null);
+    } catch (error) {
+      console.error('Failed to place bid:', error);
+    }
+  };
+
+  // Combine NFTs with their listings for filtering
+  const combineNFTsWithListings = (nfts: NFT3D[]): NFTWithListing[] => {
+    return nfts.map(nft => {
+      const listing = nft.id ? [...listings, ...auctions].find(l => l.nftId === nft.id) : undefined;
+      return { ...nft, listing };
+    });
+  };
+
+  const getNFTBids = (auctionId: string): NFTBid[] => {
+    return userBids.filter(bid => bid.auctionId === auctionId);
+  };
+
+  // Note: Sort function moved to search.ts utility for consistency
+
+  // Separate data flow: unfiltered for coverflow, filtered for grid
   const rawDisplayNFTs = selectedTab === 'owned' ? userNFTs : marketNFTs;
-  const displayNFTs = sortNFTs(rawDisplayNFTs, sortBy);
+  const nftsWithListings = combineNFTsWithListings(rawDisplayNFTs);
+  
+  // Unfiltered NFTs for coverflow (discovery/showcase)
+  const coverflowNFTs = nftsWithListings;
+  
+  // Filtered NFTs for grid (browsing with search/filters)
+  const filteredNFTs = searchAndFilterNFTs(nftsWithListings, searchFilters, sortBy);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#1a1a2e] to-[#0a0a0a] p-8">
+    <div className="min-h-screen p-8 lg:p-12" style={{ background: 'linear-gradient(135deg, #0a0a0a, #1a1a2e, #0a0a0a)' }}>
       {/* Aurora Background Effect */}
       <div className="fixed inset-0 opacity-30 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#00D4FF]/10 via-[#8B5CF6]/10 to-[#FF0080]/10 animate-pulse"></div>
+        <div className="absolute inset-0 animate-pulse" style={{ background: 'linear-gradient(90deg, rgba(0,212,255,0.1), rgba(139,92,246,0.1), rgba(255,0,128,0.1))' }}></div>
       </div>
       
       <div className="relative max-w-7xl mx-auto">
@@ -101,11 +155,21 @@ export default function GalleryPage() {
         <div className="flex justify-end px-8 pt-8 mb-8">
           <div className="flex items-center gap-6">
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/10 min-w-[240px]">
-              <div className="text-gray-400 text-xs uppercase tracking-wider mb-1">Identity</div>
-              <div className="text-[#00D4FF] font-mono font-medium text-sm whitespace-nowrap">
-                {identityId?.slice(0, 8)}...{identityId?.slice(-8)}
-              </div>
+              <div className="text-gray-400 text-xs uppercase tracking-wider mb-1">User</div>
+              <UsernameDisplay 
+                className="text-sm font-medium whitespace-nowrap"
+                showFullId={false}
+              />
             </div>
+            
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="px-6 py-3 text-sm font-medium text-white hover:text-[#00D4FF] transition-all duration-200
+                         bg-white/5 hover:bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10
+                         hover:border-[#00D4FF]/30 hover:scale-105 whitespace-nowrap"
+            >
+              Dashboard
+            </button>
             
             <button
               onClick={logout}
@@ -119,10 +183,10 @@ export default function GalleryPage() {
         </div>
 
         {/* Centered Header Title */}
-        <div className="text-center px-8 pt-16 pb-24">
+        <div className="text-center px-8 pt-16 pb-32 lg:pb-40">
           {/* Main Title */}
           <h1 className="text-7xl font-black leading-none tracking-tight mb-8">
-            <span className="bg-gradient-to-r from-[#00D4FF] via-[#8B5CF6] to-[#FF0080] bg-clip-text text-transparent">
+            <span className="bg-clip-text text-transparent" style={{ background: 'linear-gradient(90deg, #00D4FF, #8B5CF6, #FF0080)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               3D NFT Gallery
             </span>
           </h1>
@@ -138,7 +202,7 @@ export default function GalleryPage() {
           </div>
           
           {/* Centered accent line */}
-          <div className="w-24 h-1 bg-gradient-to-r from-[#00D4FF] to-[#8B5CF6] rounded-full mx-auto mt-12"></div>
+          <div className="w-24 h-1 rounded-full mx-auto mt-12" style={{ background: 'linear-gradient(90deg, #00D4FF, #8B5CF6)' }}></div>
         </div>
 
         {/* Tabs */}
@@ -146,153 +210,231 @@ export default function GalleryPage() {
           <div className="flex gap-4 p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
             <button
               onClick={() => setSelectedTab('owned')}
-              className={`px-20 py-6 rounded-xl transition-all font-medium text-xs whitespace-nowrap min-w-[200px] ${
+              className={`px-12 py-6 rounded-xl transition-all font-medium text-xs whitespace-nowrap min-w-[150px] ${
                 selectedTab === 'owned'
-                  ? 'bg-gradient-to-r from-[#00D4FF] to-[#8B5CF6] text-white shadow-lg shadow-[#00D4FF]/20'
+                  ? 'text-white shadow-lg shadow-[#00D4FF]/20'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
+              style={selectedTab === 'owned' ? { background: 'linear-gradient(90deg, #00D4FF, #8B5CF6)' } : {}}
             >
               My Collection ({userNFTs.length})
             </button>
             <button
               onClick={() => setSelectedTab('marketplace')}
-              className={`px-20 py-6 rounded-xl transition-all font-medium text-xs whitespace-nowrap min-w-[180px] ${
+              className={`px-12 py-6 rounded-xl transition-all font-medium text-xs whitespace-nowrap min-w-[130px] ${
                 selectedTab === 'marketplace'
-                  ? 'bg-gradient-to-r from-[#00D4FF] to-[#8B5CF6] text-white shadow-lg shadow-[#00D4FF]/20'
+                  ? 'text-white shadow-lg shadow-[#00D4FF]/20'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
+              style={selectedTab === 'marketplace' ? { background: 'linear-gradient(90deg, #00D4FF, #8B5CF6)' } : {}}
             >
               Marketplace ({marketNFTs.length})
+            </button>
+            <button
+              onClick={() => setSelectedTab('enhanced')}
+              className={`px-12 py-6 rounded-xl transition-all font-medium text-xs whitespace-nowrap min-w-[130px] ${
+                selectedTab === 'enhanced'
+                  ? 'text-white shadow-lg shadow-[#00D4FF]/20'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+              }`}
+              style={selectedTab === 'enhanced' ? { background: 'linear-gradient(90deg, #00D4FF, #8B5CF6)' } : {}}
+            >
+              Enhanced Gallery (150)
             </button>
           </div>
         </div>
 
         {/* NFT Grid */}
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-400">Loading NFTs...</div>
-          </div>
-        ) : displayNFTs.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-gray-400 mb-4">
-              {selectedTab === 'owned' 
-                ? "You don't own any NFTs yet"
-                : "No NFTs available in the marketplace"
-              }
-            </p>
-            {selectedTab === 'owned' && (
-              <button
-                onClick={() => setSelectedTab('marketplace')}
-                className="px-6 py-3 bg-dash-blue hover:bg-dash-blue-dark text-white rounded-lg transition-colors"
-              >
-                Browse Marketplace
-              </button>
-            )}
+        {selectedTab === 'enhanced' ? (
+          <div className="space-y-20 lg:space-y-24">
+            {/* Enhanced Gallery Header */}
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-white mb-2">Enhanced Gallery</h2>
+              <p className="text-gray-400">Pagination and infinite scroll with 150+ NFTs</p>
+            </div>
+
+            {/* Enhanced NFT Grid with Pagination */}
+            <div className="px-12 lg:px-16">
+              <PaginatedGallery
+                mode="pagination"
+                initialFilters={{}}
+                initialSort={SortOptions.RECENT}
+                initialPageSize={20}
+                onNFTClick={handleNFTClick}
+                onQuickBuy={handleQuickBuy}
+                onPlaceBid={handlePlaceBid}
+                onCreateListing={handleCreateListing}
+                currentUserId={identityId || ''}
+                showControls={true}
+                showInfo={true}
+                showPageSizeSelector={true}
+              />
+            </div>
           </div>
         ) : (
-          <div className="space-y-32">
-            {/* Modern 3D Coverflow */}
-            <ModernNFTCoverflow 
-              nfts={displayNFTs} 
-              onNFTClick={handleNFTClick}
-              className="mb-32"
-            />
-            
-            {/* OpenSea-style NFT Listing */}
-            <div className="px-12 mt-32">
-              {/* Header Bar */}
-              <div className="flex items-center justify-between mb-8 gap-4">
-                <div className="text-white font-medium">
-                  {displayNFTs.length} items
+          <>
+            {isLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-gray-400">Loading NFTs...</div>
+              </div>
+            ) : rawDisplayNFTs.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-gray-400 mb-4">
+                  {selectedTab === 'owned' 
+                    ? "You don't own any NFTs yet"
+                    : "No NFTs available in the marketplace"
+                  }
+                </p>
+                {selectedTab === 'owned' && (
+                  <button
+                    onClick={() => setSelectedTab('marketplace')}
+                    className="px-6 py-3 bg-dash-blue hover:bg-dash-blue-dark text-white rounded-lg transition-colors"
+                  >
+                    Browse Marketplace
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-20 lg:space-y-28">
+                {/* Modern 3D Coverflow - Always shows unfiltered NFTs for discovery */}
+                <div className="space-y-8 lg:space-y-10">
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-white mb-2">Featured Collection</h2>
+                    <p className="text-gray-400">Discover amazing 3D NFTs</p>
+                  </div>
+                  <ModernNFTCoverflow 
+                    nfts={coverflowNFTs.slice(0, 10)} // Show first 10 unfiltered NFTs
+                    onNFTClick={handleNFTClick}
+                  />
                 </div>
                 
-                {/* Sort Dropdown */}
-                <div className="flex items-center space-x-4">
-                  <span className="text-gray-400 text-sm">Sort by</span>
-                  <select 
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'recent' | 'price-low' | 'price-high' | 'name')}
-                    className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#00D4FF]/50 cursor-pointer"
-                  >
-                    <option value="recent" className="bg-gray-800 text-white">Recently Created</option>
-                    <option value="price-low" className="bg-gray-800 text-white">Price: Low to High</option>
-                    <option value="price-high" className="bg-gray-800 text-white">Price: High to Low</option>
-                    <option value="name" className="bg-gray-800 text-white">Name A-Z</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* NFT Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" style={{ marginLeft: '60px', marginRight: '60px' }}>
-                {displayNFTs.map((nft) => (
-                  <div
-                    key={nft.id}
-                    onClick={() => handleNFTClick(nft)}
-                    className="group bg-white/5 hover:bg-white/8 rounded-2xl border border-white/10 hover:border-[#00D4FF]/30 cursor-pointer transition-all duration-300 hover:scale-105 backdrop-blur-sm"
-                    style={{ padding: '24px' }}
-                  >
-                    {/* NFT Image/3D Preview */}
-                    <div className="relative bg-black/20 rounded-xl overflow-hidden" 
-                         style={{ aspectRatio: '1', marginBottom: '20px', marginLeft: '8px', marginRight: '8px' }}>
-                      <div className="absolute inset-0 flex items-center justify-center" style={{ padding: '16px' }}>
-                        <NFT3DViewer nft={nft} size="small" interactive={false} autoRotate={false} />
-                      </div>
-                      
-                      {/* Hover Overlay */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <div className="text-white text-sm font-medium">View Details</div>
-                      </div>
+                {/* Search & Filters */}
+                <SearchFiltersComponent
+                  filters={searchFilters}
+                  sortBy={sortBy}
+                  onFiltersChange={setSearchFilters}
+                  onSortChange={setSortBy}
+                />
+                
+                {/* Original NFT Grid */}
+                <div className="px-12 lg:px-16">
+                  {/* Header Bar */}
+                  <div className="flex items-center justify-between mb-10 lg:mb-12 gap-4">
+                    <div className="text-white font-medium">
+                      {filteredNFTs.length} items {searchFilters.query || Object.keys(searchFilters).length > 0 ? '(filtered)' : ''}
                     </div>
-
-                    {/* NFT Info */}
-                    <div style={{ paddingLeft: '12px', paddingRight: '12px' }}>
-                      <div style={{ paddingLeft: '8px', paddingRight: '8px', marginBottom: '16px' }}>
-                        <h3 className="text-white font-medium text-sm leading-tight line-clamp-1" 
-                            style={{ marginBottom: '8px', paddingLeft: '6px', paddingRight: '6px' }}>
-                          {nft.name}
-                        </h3>
-                        <p className="text-gray-400 text-xs" style={{ paddingLeft: '6px', paddingRight: '6px' }}>
-                          {nft.collection}
-                        </p>
-                      </div>
-
-                      {/* Price Section */}
-                      <div style={{ paddingLeft: '8px', paddingRight: '8px', marginBottom: '16px' }}>
-                        <div style={{ paddingLeft: '6px', paddingRight: '6px' }}>
-                          <div className="text-gray-500 text-xs" style={{ marginBottom: '4px' }}>Price</div>
-                          <div className="text-white font-mono text-sm font-bold">
-                            {nft.price}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Creator */}
-                      <div className="border-t border-white/10" 
-                           style={{ paddingTop: '12px', paddingLeft: '8px', paddingRight: '8px' }}>
-                        <div className="text-gray-500 text-xs" style={{ marginBottom: '6px' }}>Creator</div>
-                        <div className="text-[#8B5CF6] text-xs font-medium line-clamp-1" 
-                             style={{ paddingLeft: '6px', paddingRight: '6px' }}>
-                          {nft.creator}
-                        </div>
-                      </div>
+                    
+                    <div className="flex items-center gap-4">
+                      {selectedTab === 'owned' && (
+                        <button
+                          onClick={() => setShowCreateListing(true)}
+                          className="px-6 py-2 bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] text-white rounded-lg hover:from-[#6D28D9] hover:to-[#8B5CF6] transition-colors text-sm font-medium"
+                        >
+                          Create Listing
+                        </button>
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Marketplace Badge */}
-            {selectedTab === 'marketplace' && (
-              <div className="text-center">
-                <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#00D4FF]/20 to-[#8B5CF6]/20 border border-[#00D4FF]/30 backdrop-blur-sm">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-[#00D4FF] text-sm font-medium">Live Marketplace</span>
+
+                  {/* Original NFT Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-8 xl:gap-10">
+                    {filteredNFTs.length === 0 ? (
+                      <div className="col-span-full text-center py-16">
+                        <p className="text-gray-400 mb-4">No NFTs match your search criteria</p>
+                        <button
+                          onClick={() => setSearchFilters({})}
+                          className="text-[#00D4FF] hover:text-[#0099CC] transition-colors"
+                        >
+                          Clear filters
+                        </button>
+                      </div>
+                    ) : (
+                      filteredNFTs.map((nft, index) => (
+                      <NFTCard
+                        key={nft.id || `nft-${index}`}
+                        nft={nft}
+                        listing={nft.listing}
+                        onClick={handleNFTClick}
+                        onQuickBuy={handleQuickBuy}
+                        onPlaceBid={handlePlaceBid}
+                        onCreateListing={handleCreateListing}
+                        showOwnership={selectedTab === 'marketplace'}
+                        currentUserId={identityId || ''}
+                      />
+                      ))
+                    )}
+                  </div>
                 </div>
+                
+                {/* Marketplace Badge */}
+                {selectedTab === 'marketplace' && (
+                  <div className="text-center">
+                    <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#00D4FF]/20 to-[#8B5CF6]/20 border border-[#00D4FF]/30 backdrop-blur-sm">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      <span className="text-[#00D4FF] text-sm font-medium">Live Marketplace</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
+      
+      {/* Modals */}
+      {showCreateListing && selectedNFT && (
+        <CreateListing
+          nft={selectedNFT}
+          isOpen={showCreateListing}
+          onClose={() => {
+            setShowCreateListing(false);
+            setSelectedNFT(null);
+          }}
+          onCreateListing={createListing}
+          onCreateAuction={createAuction}
+        />
+      )}
+      
+      {showBiddingInterface && selectedAuction && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-[#0a0a0a] via-[#1a1a2e] to-[#0a0a0a] rounded-3xl border border-white/10 p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white">Place Bid</h2>
+              <button
+                onClick={() => {
+                  setShowBiddingInterface(false);
+                  setSelectedAuction(null);
+                }}
+                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <BiddingInterface
+              auction={selectedAuction}
+              currentUserBid={userBids.find(bid => bid.auctionId === selectedAuction.id && bid.bidderId === identityId)}
+              recentBids={getNFTBids(selectedAuction.id)}
+              currentUserId={identityId || ''}
+              onPlaceBid={handleBidSubmit}
+            />
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function GalleryPage() {
+  return (
+    <ClientOnly fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-xl">Loading Gallery...</div>
+      </div>
+    }>
+      <GalleryPageInner />
+    </ClientOnly>
   );
 }

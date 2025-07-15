@@ -11,12 +11,22 @@ export default function ClientOnly({ children, fallback = null }: ClientOnlyProp
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    setHasMounted(true);
+    // Add a small delay to ensure DOM is fully ready
+    const timer = setTimeout(() => {
+      setHasMounted(true);
+    }, 10);
+    
+    return () => clearTimeout(timer);
   }, []);
 
-  if (!hasMounted) {
-    return fallback;
+  // Never render on server-side
+  if (typeof window === 'undefined') {
+    return <>{fallback}</>;
   }
 
-  return <>{children}</>;
+  if (!hasMounted) {
+    return <>{fallback}</>;
+  }
+
+  return <div suppressHydrationWarning>{children}</div>;
 }

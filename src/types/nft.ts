@@ -89,3 +89,78 @@ export function createParametricGeometry(
 export function estimateGeometrySize(geometry: string): number {
   return new Blob([geometry]).size;
 }
+
+// Marketplace Types
+
+export interface NFTListing {
+  id: string;
+  nftId: string;
+  sellerId: string;
+  listingType: 'fixed' | 'auction';
+  price: string; // For fixed price listings
+  startingPrice?: string; // For auctions
+  currentPrice?: string; // Current highest bid for auctions
+  currency: 'DASH';
+  status: 'active' | 'sold' | 'cancelled' | 'expired';
+  createdAt: number;
+  expiresAt?: number; // For auctions
+  // Additional fields for UI
+  views?: number;
+  favorites?: number;
+}
+
+export interface NFTAuction extends NFTListing {
+  listingType: 'auction';
+  startingPrice: string;
+  currentPrice: string;
+  reservePrice?: string;
+  bidIncrement: string;
+  startTime: number;
+  endTime: number;
+  totalBids: number;
+  highestBidder?: string;
+}
+
+export interface NFTBid {
+  id: string;
+  auctionId: string;
+  bidderId: string;
+  amount: string;
+  currency: 'DASH';
+  timestamp: number;
+  status: 'active' | 'outbid' | 'winning' | 'cancelled';
+}
+
+export interface SearchFilters {
+  query?: string;
+  collections?: string[];
+  creators?: string[];
+  priceRange?: {
+    min?: number;
+    max?: number;
+  };
+  rarity?: ('Common' | 'Rare' | 'Epic' | 'Legendary' | 'Mythic')[];
+  listingType?: ('fixed' | 'auction')[];
+  status?: ('active' | 'sold' | 'cancelled' | 'expired')[];
+  geometryType?: ('parametric' | 'voxel' | 'procedural')[];
+}
+
+export enum SortOptions {
+  RECENT = 'recent',
+  PRICE_LOW = 'price-low',
+  PRICE_HIGH = 'price-high',
+  NAME_AZ = 'name-az',
+  NAME_ZA = 'name-za',
+  ENDING_SOON = 'ending-soon',
+  MOST_BIDS = 'most-bids',
+  RARITY = 'rarity'
+}
+
+export interface MarketplaceStats {
+  totalListings: number;
+  totalVolume: string;
+  floorPrice: string;
+  averagePrice: string;
+  activeAuctions: number;
+  soldToday: number;
+}

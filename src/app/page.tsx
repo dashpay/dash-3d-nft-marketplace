@@ -6,12 +6,13 @@ import { useStore } from '@/store/useStore';
 import { NetworkToggle } from '@/components/NetworkToggle';
 import { getNFTSDK } from '@/lib/dash-sdk';
 import { ConnectionDebugger } from '@/components/ConnectionDebugger';
+import { LoginForm } from '@/components/auth/LoginForm';
+import ClientOnly from '@/components/ClientOnly';
 
-export default function LoginPage() {
+function LoginPageInner() {
   const router = useRouter();
-  const { network, setNetwork, login, isAuthenticated, error, setError } = useStore();
+  const { network, setNetwork, login, isAuthenticated } = useStore();
   const [identityId, setIdentityId] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Load saved network preference only on client side
@@ -33,33 +34,22 @@ export default function LoginPage() {
       if (savedIdentity) {
         setIdentityId(savedIdentity);
         // Auto-login
-        handleLogin(savedIdentity);
+        login(savedIdentity);
       }
     }
   }, [network]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/gallery');
+      router.push('/dashboard');
     }
   }, [isAuthenticated, router]);
 
-  const handleLogin = async (id?: string) => {
-    const identityToUse = id || identityId;
-    if (!identityToUse.trim()) {
-      setError('Please enter an identity ID');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
+  const handleDemoLogin = async () => {
     try {
-      await login(identityToUse);
+      await login('5rvkYqKPPKPLnUvgRfuerT4o9CJ8qKRM8GBm2YGvVBXx');
     } catch (err) {
       // Error is handled in the store
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -79,7 +69,9 @@ export default function LoginPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-7xl font-bold mb-4">
-              <span className="gradient-text">Dash 3D NFTs</span>
+              <ClientOnly fallback={<span className="text-blue-400">Dash 3D NFTs</span>}>
+                <span className="gradient-text">Dash 3D NFTs</span>
+              </ClientOnly>
             </h1>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
               Experience the future of digital art with 3D NFTs on Dash Platform. 
@@ -104,51 +96,22 @@ export default function LoginPage() {
             <NetworkToggle
               currentNetwork={network}
               onNetworkChange={handleNetworkChange}
-              disabled={isLoading}
             />
           </div>
 
           {/* Login Form */}
-          <div className="gradient-border p-8 space-y-6">
-            <div>
-              <label htmlFor="identity" className="block text-sm font-medium mb-2">
-                Identity ID
-              </label>
-              <input
-                id="identity"
-                type="text"
-                value={identityId}
-                onChange={(e) => setIdentityId(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                placeholder="e.g., 5rvkYqKPPKPLnUvgRfuerT4o9CJ8qKRM8GBm2YGvVBXx"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-dash-blue transition-colors"
-                disabled={isLoading}
-              />
-              <p className="mt-2 text-sm text-gray-500">
-                Format: 44 base58 characters (alphanumeric, no 0, O, I, or l)
-              </p>
-            </div>
-
-            {error && (
-              <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
-                {error}
+          <ClientOnly fallback={
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 space-y-6">
+              <div>
+                <label htmlFor="identity" className="block text-sm font-medium mb-2">Identity ID or Username</label>
+                <input id="identity" type="text" placeholder="Loading..." className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg" disabled />
               </div>
-            )}
-
-            <button
-              onClick={() => handleLogin()}
-              disabled={isLoading || !identityId.trim()}
-              className={`
-                w-full py-3 px-4 rounded-lg font-medium transition-all duration-200
-                ${isLoading || !identityId.trim()
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-dash-blue hover:bg-dash-blue-dark text-white glow'
-                }
-              `}
-            >
-              {isLoading ? 'Verifying...' : 'Enter Gallery'}
-            </button>
-          </div>
+            </div>
+          }>
+            <div className="gradient-border p-8">
+              <LoginForm />
+            </div>
+          </ClientOnly>
 
           {/* Demo Mode */}
           <div className="text-center space-y-4">
@@ -162,8 +125,7 @@ export default function LoginPage() {
             </div>
             
             <button
-              onClick={() => handleLogin('5rvkYqKPPKPLnUvgRfuerT4o9CJ8qKRM8GBm2YGvVBXx')}
-              disabled={isLoading}
+              onClick={handleDemoLogin}
               className="text-dash-blue hover:text-dash-blue-dark transition-colors"
             >
               Try Demo Mode
@@ -181,5 +143,17 @@ export default function LoginPage() {
       {/* Connection Debugger */}
       <ConnectionDebugger />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <ClientOnly fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    }>
+      <LoginPageInner />
+    </ClientOnly>
   );
 }

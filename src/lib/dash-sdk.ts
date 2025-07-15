@@ -73,6 +73,73 @@ export class DashNFTSDK {
       return false;
     }
   }
+
+  // DPNS Methods
+  async getDPNSName(identityId: string): Promise<string | null> {
+    try {
+      const dpnsDocuments = await this.sdk.queryDocuments('dpns', {
+        where: {
+          normalizedParentDomainName: 'dash',
+          identityId: identityId
+        },
+        orderBy: 'normalizedLabel asc'
+      });
+      
+      if (dpnsDocuments.length > 0) {
+        return dpnsDocuments[0].data.normalizedLabel;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Failed to get DPNS name:', error);
+      return null;
+    }
+  }
+
+  async resolveUsername(username: string): Promise<string | null> {
+    try {
+      const normalizedUsername = username.toLowerCase();
+      
+      const dpnsDocuments = await this.sdk.queryDocuments('dpns', {
+        where: {
+          normalizedParentDomainName: 'dash',
+          normalizedLabel: normalizedUsername
+        }
+      });
+      
+      if (dpnsDocuments.length > 0) {
+        return dpnsDocuments[0].data.identityId;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Failed to resolve username:', error);
+      return null;
+    }
+  }
+
+  async searchUsernames(query: string): Promise<Array<{name: string, identityId: string}>> {
+    try {
+      const normalizedQuery = query.toLowerCase();
+      
+      const dpnsDocuments = await this.sdk.queryDocuments('dpns', {
+        where: {
+          normalizedParentDomainName: 'dash',
+          normalizedLabel: { startsWith: normalizedQuery }
+        },
+        orderBy: 'normalizedLabel asc',
+        limit: 20
+      });
+      
+      return dpnsDocuments.map(doc => ({
+        name: doc.data.normalizedLabel,
+        identityId: doc.data.identityId
+      }));
+    } catch (error) {
+      console.error('Failed to search usernames:', error);
+      return [];
+    }
+  }
   
   // NFT Query Methods
   async getNFTsByOwner(ownerId: string): Promise<NFT3D[]> {
