@@ -1,4 +1,6 @@
-# CLAUDE.md - Dash 3D NFT Marketplace Architecture Guide
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
@@ -215,6 +217,50 @@ NFT documents contain:
 - `geometryType`: 'parametric' | 'voxel' | 'procedural'
 - `colors`: Array of hex color codes
 - System fields: `$ownerId`, `$createdAt`, `$transferredAt`
+
+## Common Development Tasks
+
+### Commands
+```bash
+# Development with live reload (uses mocked data)
+npm run dev
+
+# Build static export for deployment
+npm run build
+
+# Run linter
+npm run lint
+
+# Run all tests
+npm run test
+
+# Run tests with watch mode
+npm run test:watch
+
+# Generate test coverage report
+npm run test:coverage
+
+# Run real WASM integration tests (no mocks)
+npm run test -- --config jest.real.config.js
+
+# Run a single test file
+npm run test -- src/test/dpns.test.ts
+```
+
+### Testing Configuration
+- Default tests use mocked data for faster development
+- Real integration tests: `jest.real.config.js` (use for blockchain testing)
+- Coverage tests: `jest.coverage.config.js` (focuses on SDK source)
+- Test timeout for network calls: 60 seconds
+
+### Deployment
+```bash
+# Build static files
+npm run build
+
+# Output will be in 'out' directory
+# Deploy entire 'out' directory to any static hosting service
+```
 
 ## Testing Approach
 - Real blockchain integration (no mocks)
