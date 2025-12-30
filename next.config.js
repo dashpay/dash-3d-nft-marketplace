@@ -1,11 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Remove static export for dynamic routes
+  // output: 'export',
   
   // For static export
-  trailingSlash: true,
+  // trailingSlash: true,
   
-  // Disable image optimization for static export
+  // Image optimization settings
   images: {
     unoptimized: true,
   },

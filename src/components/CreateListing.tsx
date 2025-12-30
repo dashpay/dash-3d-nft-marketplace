@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NFT3D, NFTListing, NFTAuction } from '@/types/nft';
 import { NFT3DViewer } from './NFT3DViewer';
+import { Button } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/search';
 
 interface CreateListingProps {
@@ -295,25 +296,23 @@ export function CreateListing({ nft, isOpen, onClose, onCreateListing, onCreateA
 
             {/* Action Buttons */}
             <div className="flex gap-4 pt-4">
-              <button
+              <Button
                 type="button"
                 onClick={onClose}
                 disabled={isLoading}
-                className="flex-1 px-6 py-3 rounded-xl text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50"
+                className="flex-1"
+                variant="secondary"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={isLoading}
-                className={`flex-1 px-6 py-3 rounded-xl text-white font-medium transition-colors disabled:opacity-50 ${
-                  listingType === 'fixed'
-                    ? 'bg-gradient-to-r from-[#00D4FF] to-[#0099CC] hover:from-[#0099CC] hover:to-[#00D4FF]'
-                    : 'bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#8B5CF6]'
-                }`}
+                className="flex-1"
+                variant={listingType === 'fixed' ? 'cyan' : 'violet'}
               >
                 {isLoading ? 'Creating...' : `Create ${listingType === 'fixed' ? 'Listing' : 'Auction'}`}
-              </button>
+              </Button>
             </div>
           </form>
         </motion.div>

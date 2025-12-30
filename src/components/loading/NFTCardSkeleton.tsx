@@ -16,9 +16,9 @@ export function NFTCardSkeleton({ className = '' }: NFTCardSkeletonProps) {
       </div>
 
       {/* Content Skeleton */}
-      <div className="p-4 space-y-3">
+      <div className="p-4 md:p-5 space-y-4">
         {/* Title */}
-        <div className="h-5 bg-gray-700 rounded animate-pulse"></div>
+        <div className="h-5 md:h-6 bg-gray-700 rounded animate-pulse"></div>
         
         {/* Creator and Collection */}
         <div className="flex justify-between items-center">
@@ -27,7 +27,7 @@ export function NFTCardSkeleton({ className = '' }: NFTCardSkeletonProps) {
         </div>
 
         {/* Price */}
-        <div className="h-4 bg-gray-700 rounded w-24 animate-pulse"></div>
+        <div className="h-4 md:h-5 bg-gray-700 rounded w-24 animate-pulse"></div>
 
         {/* Rarity Badge */}
         <div className="h-5 bg-gray-700 rounded-full w-16 animate-pulse"></div>

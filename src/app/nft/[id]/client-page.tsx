@@ -9,7 +9,9 @@ import { NFTMetadataPanel } from '@/components/nft-details/NFTMetadataPanel';
 import { NFTOwnershipSection } from '@/components/nft-details/NFTOwnershipSection';
 import { NFTActionPanel } from '@/components/nft-details/NFTActionPanel';
 import { NFTTransactionHistory } from '@/components/nft-details/NFTTransactionHistory';
+import { NavHeader } from '@/components/NavHeader';
 import { LoadingSpinner } from '@/components/loading/LoadingIndicators';
+import { Button } from '@/components/ui/Button';
 
 interface NFTDetailsClientPageProps {
   params: { id: string };
@@ -151,12 +153,12 @@ export function NFTDetailsClientPage({ params }: NFTDetailsClientPageProps) {
           <h1 className="text-2xl font-bold text-white mb-4">
             {error || 'NFT Not Found'}
           </h1>
-          <button
+          <Button
             onClick={() => router.push('/gallery')}
-            className="px-6 py-3 bg-gradient-to-r from-[#00D4FF] to-[#0099CC] text-white rounded-lg hover:from-[#0099CC] hover:to-[#00D4FF] transition-colors"
+            variant="cyan"
           >
             Back to Gallery
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -164,19 +166,22 @@ export function NFTDetailsClientPage({ params }: NFTDetailsClientPageProps) {
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #0a0a0a, #1a1a2e, #0a0a0a)' }}>
+      {/* Navigation Header */}
+      <NavHeader />
+
       {/* Aurora Background Effect */}
-      <div className="fixed inset-0 opacity-30 pointer-events-none">
+      <div className="fixed inset-0 opacity-30 pointer-events-none -z-10">
         <div className="absolute inset-0 animate-pulse" style={{ background: 'linear-gradient(90deg, rgba(0,212,255,0.1), rgba(139,92,246,0.1), rgba(255,0,128,0.1))' }}></div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 py-8">
+      <div className="relative section-container py-8">
         {/* Breadcrumb Navigation */}
-        <div className="mb-8">
+        <div className="mb-6">
           <button
             onClick={() => router.push('/gallery')}
-            className="flex items-center text-gray-400 hover:text-white transition-colors"
+            className="flex items-center text-gray-400 hover:text-white transition-colors text-sm"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to Gallery
@@ -253,21 +258,23 @@ export function NFTDetailsClientPage({ params }: NFTDetailsClientPageProps) {
               </div>
               
               <div className="flex gap-3">
-                <button
+                <Button
                   onClick={() => {
                     // In real app, would get values from form
                     handleCreateListing('5.0', 'fixed');
                   }}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-[#00D4FF] to-[#0099CC] text-white rounded-lg hover:from-[#0099CC] hover:to-[#00D4FF] transition-colors"
+                  className="flex-1"
+                  variant="cyan"
                 >
                   List for Sale
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setShowCreateListing(false)}
-                  className="flex-1 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                  className="flex-1"
+                  variant="secondary"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           </div>

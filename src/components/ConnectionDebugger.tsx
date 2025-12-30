@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { setupConnectionMonitoring, testDirectConnection } from '@/lib/monitor-wasm-connection-mock';
 import { testWorkingEvonode } from '@/lib/test-working-evonode-mock';
 import { testWasmConnection } from '@/lib/test-wasm-connection-mock';
+import { Button } from '@/components/ui/Button';
 
 export function ConnectionDebugger() {
   const [isMonitoring, setIsMonitoring] = useState(false);
@@ -63,34 +64,42 @@ export function ConnectionDebugger() {
       <h3 className="text-lg font-bold mb-2">Connection Debugger</h3>
       
       <div className="space-y-2 mb-4">
-        <button
+        <Button
           onClick={enableMonitoring}
           disabled={isMonitoring}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 px-3 py-1 rounded text-sm"
+          size="sm"
+          variant="cyan"
+          block
         >
           {isMonitoring ? '✅ Monitoring Enabled' : 'Enable Connection Monitoring'}
-        </button>
+        </Button>
         
-        <button
+        <Button
           onClick={testConnections}
-          className="w-full bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
+          size="sm"
+          variant="violet"
+          block
         >
           Test Evonode Connections
-        </button>
+        </Button>
         
-        <button
+        <Button
           onClick={checkWasmSdkEndpoints}
-          className="w-full bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-sm"
+          size="sm"
+          variant="secondary"
+          block
         >
           Check WASM SDK Endpoints
-        </button>
+        </Button>
         
-        <button
+        <Button
           onClick={runWasmConnectionTest}
-          className="w-full bg-orange-600 hover:bg-orange-700 px-3 py-1 rounded text-sm"
+          size="sm"
+          variant="ghost"
+          block
         >
           Test WASM SDK Connection
-        </button>
+        </Button>
       </div>
       
       <div className="max-h-48 overflow-y-auto bg-black/50 p-2 rounded text-xs">

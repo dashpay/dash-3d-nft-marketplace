@@ -11,51 +11,54 @@ interface NetworkToggleProps {
 export function NetworkToggle({ currentNetwork, onNetworkChange, disabled = false }: NetworkToggleProps) {
   const [isChanging, setIsChanging] = useState(false);
 
-  const handleToggle = async () => {
-    if (disabled || isChanging) return;
-    
+  const handleToggle = async (targetNetwork: 'mainnet' | 'testnet') => {
+    if (disabled || isChanging || currentNetwork === targetNetwork) return;
+
     setIsChanging(true);
-    const newNetwork = currentNetwork === 'mainnet' ? 'testnet' : 'mainnet';
-    
+
     try {
-      await onNetworkChange(newNetwork);
+      await onNetworkChange(targetNetwork);
     } finally {
       setIsChanging(false);
     }
   };
 
   return (
-    <div className="flex items-center space-x-3">
-      <span className={`text-sm font-medium ${currentNetwork === 'testnet' ? 'text-blue-400' : 'text-gray-400'}`}>
-        Testnet
-      </span>
-      
+    <div className="toggle-container">
       <button
-        onClick={handleToggle}
+        onClick={() => handleToggle('testnet')}
         disabled={disabled || isChanging}
-        className={`
-          relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900
-          ${disabled || isChanging ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-          ${currentNetwork === 'mainnet' ? 'bg-blue-600' : 'bg-gray-600'}
-        `}
-        title={`Switch to ${currentNetwork === 'mainnet' ? 'testnet' : 'mainnet'}`}
+        className={`toggle-option ${
+          currentNetwork === 'testnet'
+            ? 'toggle-active bg-gradient-to-r from-[#8B5CF6] to-[#A855F7]'
+            : ''
+        } ${disabled || isChanging ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <span
-          className={`
-            ${currentNetwork === 'mainnet' ? 'translate-x-6' : 'translate-x-1'}
-            inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-          `}
-        />
+        <span className={`w-2.5 h-2.5 rounded-full ${
+          currentNetwork === 'testnet' ? 'bg-white animate-pulse-soft' : 'bg-[#475569]'
+        }`} />
+        <span>Testnet</span>
+      </button>
+
+      <button
+        onClick={() => handleToggle('mainnet')}
+        disabled={disabled || isChanging}
+        className={`toggle-option ${
+          currentNetwork === 'mainnet'
+            ? 'toggle-active bg-gradient-to-r from-[#008de4] to-[#00D4FF]'
+            : ''
+        } ${disabled || isChanging ? 'opacity-50 cursor-not-allowed' : ''}`}
+      >
+        <span className={`w-2.5 h-2.5 rounded-full ${
+          currentNetwork === 'mainnet' ? 'bg-white animate-pulse-soft' : 'bg-[#475569]'
+        }`} />
+        <span>Mainnet</span>
         {isChanging && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+          <div className="ml-2">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
           </div>
         )}
       </button>
-      
-      <span className={`text-sm font-medium ${currentNetwork === 'mainnet' ? 'text-blue-400' : 'text-gray-400'}`}>
-        Mainnet
-      </span>
     </div>
   );
 }

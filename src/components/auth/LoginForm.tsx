@@ -13,22 +13,15 @@ export function LoginForm({ className = '' }: LoginFormProps) {
   const [inputType, setInputType] = useState<'auto' | 'identity' | 'username'>('auto');
 
   const detectInputType = (value: string): 'identity' | 'username' => {
-    // Identity ID format: 44 base58 characters
     const identityRegex = /^[1-9A-HJ-NP-Za-km-z]{44}$/;
     if (identityRegex.test(value)) {
       return 'identity';
     }
-    // Otherwise treat as username
     return 'username';
   };
 
   const handleInputChange = (value: string) => {
     setInput(value);
-    if (inputType === 'auto') {
-      // Auto-detect input type for UI feedback
-      const detected = detectInputType(value);
-      // You could add visual feedback here if needed
-    }
   };
 
   const handleLogin = async () => {
@@ -39,7 +32,7 @@ export function LoginForm({ className = '' }: LoginFormProps) {
 
     try {
       const type = inputType === 'auto' ? detectInputType(input) : inputType;
-      
+
       if (type === 'identity') {
         await login(input);
       } else {
@@ -73,32 +66,32 @@ export function LoginForm({ className = '' }: LoginFormProps) {
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-8 ${className}`}>
       <div>
-        <label htmlFor="auth-input" className="block text-sm font-medium mb-2">
+        <label className="form-label mb-4 block">
           Identity ID or Username
         </label>
-        
+
         {/* Input Type Toggle */}
-        <div className="flex mb-3 p-1 bg-gray-800 rounded-lg">
+        <div className="toggle-container mb-6">
           <button
             type="button"
             onClick={() => setInputType('auto')}
-            className={`px-3 py-1 text-sm rounded transition-colors ${
+            className={`toggle-option ${
               inputType === 'auto'
-                ? 'bg-dash-blue text-white'
-                : 'text-gray-400 hover:text-white'
+                ? 'toggle-active bg-gradient-to-r from-[#008de4] to-[#00D4FF]'
+                : ''
             }`}
           >
-            Auto-detect
+            Auto
           </button>
           <button
             type="button"
             onClick={() => setInputType('identity')}
-            className={`px-3 py-1 text-sm rounded transition-colors ${
+            className={`toggle-option ${
               inputType === 'identity'
-                ? 'bg-dash-blue text-white'
-                : 'text-gray-400 hover:text-white'
+                ? 'toggle-active bg-gradient-to-r from-[#008de4] to-[#00D4FF]'
+                : ''
             }`}
           >
             Identity ID
@@ -106,10 +99,10 @@ export function LoginForm({ className = '' }: LoginFormProps) {
           <button
             type="button"
             onClick={() => setInputType('username')}
-            className={`px-3 py-1 text-sm rounded transition-colors ${
+            className={`toggle-option ${
               inputType === 'username'
-                ? 'bg-dash-blue text-white'
-                : 'text-gray-400 hover:text-white'
+                ? 'toggle-active bg-gradient-to-r from-[#008de4] to-[#00D4FF]'
+                : ''
             }`}
           >
             Username
@@ -123,17 +116,17 @@ export function LoginForm({ className = '' }: LoginFormProps) {
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
           placeholder={getInputPlaceholder()}
-          className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-dash-blue transition-colors"
+          className="w-full"
           disabled={isLoading}
         />
-        
-        <p className="mt-2 text-sm text-gray-500">
+
+        <p className="form-helper mt-3">
           {getInputHelperText()}
         </p>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
+        <div className="px-5 py-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
           {error}
         </div>
       )}
@@ -141,13 +134,11 @@ export function LoginForm({ className = '' }: LoginFormProps) {
       <button
         onClick={handleLogin}
         disabled={isLoading || !input.trim()}
-        className={`
-          w-full py-3 px-4 rounded-lg font-medium transition-all duration-200
-          ${isLoading || !input.trim()
-            ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-            : 'bg-dash-blue hover:bg-dash-blue-dark text-white'
-          }
-        `}
+        className={`btn w-full ${
+          isLoading || !input.trim()
+            ? 'btn-secondary opacity-50 cursor-not-allowed'
+            : 'btn-cyan'
+        }`}
       >
         {isLoading ? 'Authenticating...' : 'Enter Gallery'}
       </button>

@@ -279,8 +279,6 @@ export const useStore = create<AppState>((set, get) => ({
         mintedNFTs: [...mintedNFTs, newNFT],
         isLoading: false 
       });
-
-      return newNFT;
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to mint NFT',

@@ -9,67 +9,74 @@ export function QuickActions() {
   const actions = [
     {
       title: 'Mint New NFT',
-      description: 'Create a new 3D NFT',
+      description: 'Create a unique 3D masterpiece on the blockchain',
       icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
         </svg>
       ),
       action: () => router.push('/mint'),
-      gradient: 'from-[#00D4FF] to-[#0099CC]',
+      gradient: 'from-[#008de4] to-[#00D4FF]',
+      shadowColor: 'shadow-[#008de4]/25',
       primary: true
     },
     {
       title: 'Browse Gallery',
-      description: 'Explore your collection',
+      description: 'Explore and manage your NFT collection',
       icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
         </svg>
       ),
       action: () => router.push('/gallery'),
-      gradient: 'from-[#8B5CF6] to-[#6D28D9]'
+      gradient: 'from-[#8B5CF6] to-[#A855F7]',
+      shadowColor: 'shadow-[#8B5CF6]/25'
     },
     {
       title: 'Marketplace',
-      description: 'Buy and sell NFTs',
+      description: 'Discover and trade NFTs with other collectors',
       icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13v6a2 2 0 002 2h10a2 2 0 002-2v-6" />
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
         </svg>
       ),
       action: () => router.push('/gallery?tab=marketplace'),
-      gradient: 'from-[#FF0080] to-[#CC0066]'
+      gradient: 'from-[#EC4899] to-[#F472B6]',
+      shadowColor: 'shadow-[#EC4899]/25'
     }
   ];
 
   return (
-    <div className="mb-12 lg:mb-16">
-      <h2 className="text-2xl font-bold text-white mb-8 lg:mb-10">Quick Actions</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-        {actions.map((action, index) => (
+    <div>
+      <div className="mb-8 lg:mb-10">
+        <h2 className="section-title">Quick Actions</h2>
+        <p className="section-subtitle mb-0">Get started with common tasks</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        {actions.map((action) => (
           <button
             key={action.title}
             onClick={action.action}
-            className={`p-6 lg:p-8 rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 text-left group ${
-              action.primary 
-                ? 'bg-gradient-to-r from-[#00D4FF]/20 to-[#0099CC]/20' 
-                : 'bg-white/5 hover:bg-white/10'
-            } backdrop-blur-sm`}
+            className={`action-card group ${action.primary ? 'action-card-primary' : ''}`}
           >
-            <div className="flex items-start gap-4">
-              <div className={`p-3 rounded-xl bg-gradient-to-r ${action.gradient} text-white group-hover:scale-110 transition-transform duration-300`}>
+            <div className="flex items-center gap-5">
+              {/* Icon with generous padding */}
+              <div className={`action-icon bg-gradient-to-br ${action.gradient} text-white shadow-xl ${action.shadowColor} group-hover:scale-105 transition-transform duration-300 flex-shrink-0`}>
                 {action.icon}
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-white transition-colors">
+
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-white mb-1.5 group-hover:text-white transition-colors">
                   {action.title}
                 </h3>
-                <p className="text-gray-400 text-sm group-hover:text-gray-300 transition-colors">
+                <p className="text-[#64748b] text-sm leading-relaxed group-hover:text-[#94a3b8] transition-colors">
                   {action.description}
                 </p>
               </div>
-              <div className="text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all duration-300">
+
+              {/* Arrow indicator */}
+              <div className="text-[#475569] group-hover:text-white group-hover:translate-x-1 transition-all duration-300 flex-shrink-0">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>

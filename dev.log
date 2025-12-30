@@ -1,0 +1,66 @@
+
+> dash-3d-nft-marketplace@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.3.4 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.207:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1371ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1678ms
+ GET / 200 in 1904ms
+ ○ Compiling /gallery ...
+ ✓ Compiled /gallery in 1633ms
+ GET /gallery/ 200 in 1803ms
+ GET / 200 in 161ms
+ GET / 200 in 99ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 798ms
+ GET /dashboard/ 200 in 855ms
+ GET /gallery/ 200 in 201ms
+ GET /gallery/ 200 in 404ms
+ GET / 200 in 146ms
+ GET / 200 in 111ms
+ GET /dashboard/ 200 in 211ms
+ GET /gallery/ 200 in 165ms
+ ✓ Compiled in 917ms
+ ✓ Compiled in 475ms
+ ✓ Compiled in 293ms
+ ✓ Compiled in 506ms
+ ✓ Compiled /gallery in 140ms
+ GET /gallery/ 200 in 514ms
+ GET /gallery/ 200 in 153ms
+ ✓ Compiled in 259ms
+ ✓ Compiled in 248ms
+ ✓ Compiled in 270ms
+ ✓ Compiled in 276ms
+ ✓ Compiled in 217ms
+ ✓ Compiled in 257ms
+ GET /gallery/ 200 in 471ms
+ GET / 200 in 202ms
+ GET / 200 in 116ms
+ ✓ Compiled /dashboard in 96ms
+ GET /dashboard/ 200 in 227ms
+ GET /gallery/ 200 in 222ms
+ GET /gallery/ 200 in 373ms
+ GET / 200 in 146ms
+ GET / 200 in 107ms
+ GET /dashboard/ 200 in 179ms
+ GET /gallery/ 200 in 190ms
+ HEAD / 200 in 313ms
+ GET / 200 in 224ms
+ GET /dashboard/ 200 in 222ms
+ GET /gallery/ 200 in 182ms
+ GET / 200 in 255ms
+ GET /dashboard/ 200 in 226ms
+ GET /gallery/ 200 in 177ms
+ GET /gallery/ 200 in 341ms
+ GET / 200 in 209ms
+ GET / 200 in 118ms
+ GET /dashboard/ 200 in 187ms
+ GET /gallery/ 200 in 402ms
+ GET /dashboard/ 200 in 347ms
+ GET /gallery/ 200 in 381ms

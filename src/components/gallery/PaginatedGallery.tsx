@@ -119,9 +119,9 @@ export function PaginatedGallery({
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-8 md:space-y-10 ${className}`}>
       {/* Gallery Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         {/* Gallery Info */}
         {showInfo && (
           <div className="flex items-center gap-4">
@@ -142,14 +142,14 @@ export function PaginatedGallery({
         )}
 
         {/* Mode Toggle and Page Size */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           {/* Mode Toggle */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span className="text-sm text-gray-400">View:</span>
-            <div className="flex bg-gray-800 rounded-lg p-1">
+            <div className="flex bg-gray-800 rounded-lg p-1.5">
               <button
                 onClick={() => setCurrentMode('pagination')}
-                className={`px-3 py-1 text-xs rounded transition-colors ${
+                className={`px-4 py-2 text-sm rounded transition-colors ${
                   currentMode === 'pagination'
                     ? 'bg-dash-blue text-white'
                     : 'text-gray-400 hover:text-white'
@@ -159,7 +159,7 @@ export function PaginatedGallery({
               </button>
               <button
                 onClick={() => setCurrentMode('infinite')}
-                className={`px-3 py-1 text-xs rounded transition-colors ${
+                className={`px-4 py-2 text-sm rounded transition-colors ${
                   currentMode === 'infinite'
                     ? 'bg-dash-blue text-white'
                     : 'text-gray-400 hover:text-white'
@@ -196,7 +196,7 @@ export function PaginatedGallery({
       )}
 
       {/* NFT Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-8 xl:gap-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 lg:gap-10 xl:gap-12">
         {currentData.state.data.map((nft, index) => (
           <NFTCard
             key={`${nft.id}-${index}`}
