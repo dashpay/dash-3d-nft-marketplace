@@ -25,7 +25,7 @@ async function createIdentity() {
     if (account.getTotalBalance() === 0) {
       console.log('\n❌ Account has no balance!');
       console.log('   Please fund this address with testnet DASH:', address);
-      console.log('   You can get testnet DASH from: https://testnet-faucet.dash.org/');
+      console.log('   You can get testnet DASH from: https://faucet.testnet.networks.dash.org/');
       return;
     }
     
